@@ -498,7 +498,7 @@ function savePay(){
   const id=pM.value;const a=+pA.value;
   if(!id){toast('Choose a member');return}if(!(a>0)){toast('Enter an amount above 0');return}if(!pD.value){toast('Choose the date');return}
   const p={id:uid(),memberId:id,amount:a,date:pD.value,by:pB.value.trim(),note:pN.value.trim()};
-  S.payments.push(p);try{localStorage.setItem(KEY+'_by',p.by)}catch(e){}save();render();memberSheet(id);toast('Payment saved: '+rs(a));
+  S.payments.push(p);try{localStorage.setItem(KEY+'_by',p.by)}catch(e){}save();render();receiptPrompt(p.id);
 }
 function delPay(pid){const p=S.payments.find(x=>x.id===pid);if(!confirm('Delete payment of '+rs(p.amount)+' on '+dL(p.date)+'?'))return;S.payments=S.payments.filter(x=>x.id!==pid);save();render();memberSheet(p.memberId);toast('Payment deleted')}
 
@@ -507,8 +507,50 @@ function waNum(ph){let d=String(ph||'').replace(/\D/g,'');if(d.startsWith('00'))
 function wa(ph,text){window.open('https://wa.me/'+waNum(ph)+'?text='+encodeURIComponent(text),'_blank')}
 function remind(id){const m=byId(id);const s=summary(m);const st=S.settings;
   wa(m.phone,`Assalam o Alaikum ${m.name} sahib,\n\n${st.name} (${st.place}) monthly chanda:\nPending: ${rs(s.bal)} (${s.mDue} month${s.mDue>1?'s':''}, up to ${mL(curMonth())})\n\nPlease pay at your earliest. JazakAllah Khair.`)}
-function receipt(pid){const p=S.payments.find(x=>x.id===pid);const m=byId(p.memberId);const s=summary(m);const pu=paidUpto(m);const st=S.settings;
-  wa(m.phone,`*${st.name}*\n${st.place}\n\nRECEIPT\nName: ${m.name}\nAmount: ${rs(p.amount)}\nDate: ${dL(p.date)}${p.by?'\nReceived by: '+p.by:''}${pu?'\nPaid up to: '+mL(pu):''}\n${s.bal>0?'Remaining: '+rs(s.bal):s.bal<0?'Advance: '+rs(-s.bal):'All dues clear'}\n\nJazakAllah Khair`)}
+const UM=['جنوری','فروری','مارچ','اپریل','مئی','جون','جولائی','اگست','ستمبر','اکتوبر','نومبر','دسمبر'];
+const uMon=m=>UM[+m.slice(5)-1]+' '+m.slice(0,4);
+const uRs=n=>Math.round(n).toLocaleString('en-PK')+' روپے';
+const uDate=d=>{const[y,m,dd]=d.split('-');return +dd+' '+UM[+m-1]+' '+y};
+function uMonths(L){ // ["2026-01","2026-02"] -> "جنوری تا فروری 2026"
+  if(!L.length)return'';if(L.length===1)return uMon(L[0]);
+  const f=L[0],l=L[L.length-1],same=f.slice(0,4)===l.slice(0,4);
+  if(L.length===2)return same?UM[+f.slice(5)-1]+' اور '+uMon(l):uMon(f)+' اور '+uMon(l);
+  return (same?UM[+f.slice(5)-1]:uMon(f))+' تا '+uMon(l);
+}
+// Which months this one payment covered (oldest dues first)
+function payCover(p){
+  const m=byId(p.memberId),fee=+m.fee||0,arr=+m.arrears||0;
+  const mine=S.payments.filter(x=>x.memberId===m.id).sort((x,y)=>(x.date+x.id).localeCompare(y.date+y.id));
+  let before=0;for(const x of mine){if(x.id===p.id)break;before+=+x.amount}
+  const after=before+(+p.amount);
+  const old=Math.max(0,Math.min(after,arr)-Math.min(before,arr));
+  const full=[];let part=null;
+  if(fee>0){let i=Math.max(0,Math.floor((before-arr)/fee));
+    for(let n=0;n<600;n++,i++){const a=arr+i*fee;if(a>=after)break;const mo=addM(m.start,i);
+      if(a+fee<=after){if(a+fee>before)full.push(mo)}else part={mo,paid:after-a,left:a+fee-after}}}
+  return{old,full,part};
+}
+function receiptText(pid){
+  const p=S.payments.find(x=>x.id===pid);const m=byId(p.memberId);const s=summary(m);const st=S.settings;const c=payCover(p);
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`محترم *${m.name}* صاحب`,'',
+    `*${st.nameUr||st.name}* (${st.place}) کی جانب سے آپ کا تہہ دل سے شکریہ۔`,'',
+    `آپ کا ماہانہ چندہ *${uRs(p.amount)}* بتاریخ ${uDate(p.date)} وصول ہوگیا ہے۔`,''];
+  if(c.old)L.push(`🔹 سابقہ بقایا: ${uRs(c.old)}`);
+  if(c.full.length)L.push(`📅 برائے ماہ: *${uMonths(c.full)}*`);
+  if(c.part)L.push(`🔸 ${uMon(c.part.mo)} کے لیے جزوی ادائیگی (مزید ${uRs(c.part.left)} باقی)`);
+  if(p.by)L.push(`👤 وصول کنندہ: ${p.by}`);
+  L.push('');
+  L.push(s.bal>0?`💰 کل باقی بقایا: *${uRs(s.bal)}*`:s.bal<0?`✅ الحمدللہ آپ کا چندہ پیشگی جمع ہے: *${uRs(-s.bal)}*`:'✅ الحمدللہ آپ کا کوئی بقایا نہیں۔');
+  L.push('','اللہ تعالیٰ آپ کے مال میں برکت عطا فرمائے اور آپ کے اس تعاون کو قبول فرمائے۔ آمین','','جزاک اللہ خیراً 🤲');
+  return L.join('\n');
+}
+function receipt(pid){const p=S.payments.find(x=>x.id===pid);wa(byId(p.memberId).phone,receiptText(pid))}
+function receiptPrompt(pid){const p=S.payments.find(x=>x.id===pid);const m=byId(p.memberId);
+  openSheet('Payment saved ✓',`<div class="stat" style="margin-bottom:12px"><div class="k">${esc(m.name)}</div><div class="v">${rs(p.amount)}</div><div class="note">${dL(p.date)}</div></div>
+   <label class="f">Receipt message (Urdu)</label>
+   <div class="card" dir="rtl" style="white-space:pre-wrap;font-family:'Noto Nastaliq Urdu','Jameel Noori Nastaleeq',serif;font-size:15px;line-height:2.1;text-align:right">${esc(receiptText(pid)).replace(/\*/g,'')}</div>
+   <button class="btn green full" onclick="receipt('${pid}')">Send on WhatsApp</button>
+   <button class="btn ghost full" style="margin-top:8px" onclick="memberSheet('${m.id}')">Done</button>`)}
 function shareSummary(){const cm=curMonth();const st=S.settings;
   const inM=sum(S.payments.filter(p=>p.date.slice(0,7)===cm),p=>p.amount),out=sum(S.expenses.filter(e=>e.date.slice(0,7)===cm),e=>e.amount);
   const act=S.members.filter(m=>activeIn(m,cm));const paid=act.filter(m=>mStatus(m,cm)==='paid').length;
