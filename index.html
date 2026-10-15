@@ -204,6 +204,26 @@ tfoot td{font-weight:800;background:var(--gold-soft)}
 .acat.on{outline:3px solid var(--gold);outline-offset:2px}
 .hero i svg{width:26px;height:26px;color:#fff}
 .chip.ur{font-family:"Noto Nastaliq Urdu","Jameel Noori Nastaleeq",serif;font-size:14px;line-height:1.9;padding:2px 14px}
+
+.tundo{background:#f2cf6b;color:#13203a;border:0;border-radius:8px;padding:4px 10px;font-weight:800;margin-left:8px}
+.tipsc{padding-bottom:6px}
+.tip{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13.5px;font-weight:600}
+.ct+.tip{border-top:0}
+.tip .ti{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c) 15%,transparent);font-size:17px}
+.tip .btn{box-shadow:none;padding:7px 12px}
+.tips.ok{display:flex;gap:12px;align-items:center;background:var(--ok-soft);border-radius:18px;padding:12px 14px;margin-bottom:12px;font-size:13.5px}
+.tips.ok span{font-size:22px}
+#lock{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#fff;padding:20px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.08' stroke-width='1.2'%3E%3Crect x='17' y='17' width='22' height='22'/%3E%3Crect x='17' y='17' width='22' height='22' transform='rotate(45 28 28)'/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(circle at 50% 20%,#18a571,#0a5a3c 60%,#063a27)}
+#lock img{width:96px;height:96px;border-radius:50%;border:3px solid #e5c26a;background:#fff;margin-bottom:8px}
+#lock .lt{font-weight:800;font-size:18px}#lock .ls{color:#cdeedd;font-size:14px}
+.dots{display:flex;gap:16px;margin:18px 0 24px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid #f2cf6b}
+.dots i.on{background:#f2cf6b}
+.dots.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.pad{display:grid;grid-template-columns:repeat(3,72px);gap:14px}
+.pad button{width:72px;height:72px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:26px;font-weight:700}
+.pad button:active{background:rgba(242,207,107,.4)}
 </style>
 </head>
 <body>
@@ -239,7 +259,9 @@ const DEF_COLS=['محمد حیات','شاہ حسین','فواد حسین'];
 const collectorList=()=>String(S.settings.collectors||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean);
 const DEF={settings:{name:'Masjid Khalid bin Waleed',nameUr:'مسجد خالد بن ولید',place:'Parrai, Swat',fee:500,collectors:'محمد حیات، شاہ حسین، فواد حسین'},members:[],payments:[],expenses:[],assets:[]};
 let S=load();
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.members){d.settings={...DEF.settings,...d.settings};{const have=String(d.settings.collectors||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean);DEF_COLS.forEach(n=>{if(!have.includes(n))have.push(n)});d.settings.collectors=have.join('، ')}d.expenses=d.expenses||[];d.assets=d.assets||[];return d}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
+function numberReceipts(P){let n=Math.max(0,...P.map(p=>+p.no||0));P.filter(p=>!p.no).sort((a,b)=>(a.date+a.id).localeCompare(b.date+b.id)).forEach(p=>p.no=++n)}
+const nextNo=()=>Math.max(0,...S.payments.map(p=>+p.no||0))+1;
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.members){d.settings={...DEF.settings,...d.settings};{const have=String(d.settings.collectors||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean);DEF_COLS.forEach(n=>{if(!have.includes(n))have.push(n)});d.settings.collectors=have.join('، ')}d.expenses=d.expenses||[];d.assets=d.assets||[];numberReceipts(d.payments);return d}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Could not save on this device. Download a backup.')}}
 
 /* ---------- Helpers ---------- */
@@ -256,7 +278,7 @@ const rs=n=>'Rs '+Math.round(n||0).toLocaleString('en-PK');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sum=(a,f)=>a.reduce((s,x)=>s+(+f(x)||0),0);
 const byId=id=>S.members.find(m=>m.id===id);
-function toast(t){const el=document.getElementById('toast');el.textContent=t;el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.display='none',2200)}
+function toast(t,undo){const el=document.getElementById('toast');el.innerHTML=esc(t)+(undo?' <button class="tundo">Undo</button>':'');if(undo)el.querySelector('.tundo').onclick=()=>{el.style.display='none';undo();toast('Undone')};el.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.display='none',undo?6000:2200)}
 
 /* ---------- Accounting ---------- */
 const activeIn=(m,mo)=>m.start<=mo&&(!m.end||mo<=m.end);
@@ -334,11 +356,22 @@ function vHome(){
    <div class="stat c-blue"><div class="k">Members</div><div class="v">${act.length}</div><div class="note">active this month</div></div>
    <div class="stat c-purple"><div class="k">Spent in ${MN[+cm.slice(5)-1]}</div><div class="v">${rs(spent)}</div><div class="note">masjid kharcha</div></div>
   </div>
+  ${smartTips(act.length-paidCnt)}
   ${chart6()}
   ${hadith()}
   <details class="box" open><summary>Most pending (2+ months)<span class="pill due">${top.length}</span></summary><div class="boxin">${top.length?top.map(x=>`<div class="row" onclick="memberSheet('${x.m.id}')">${av(x.m.name)}<div class="grow"><div class="t">${esc(x.m.name)}</div><div class="s">${x.s.mDue} months · ${esc(x.m.house||'')}</div></div><div class="amt red">${rs(x.s.bal)}</div></div>`).join(''):'<div class="empty">Alhamdulillah, nobody owes 2 or more months.</div>'}</div></details>
   <details class="box" open><summary>Recent payments</summary><div class="boxin">${rec.length?rec.map(payRow).join(''):'<div class="empty">No payments recorded yet.</div>'}</div></details>`;
 }
+function smartTips(unpaid){const T=[];const cm=curMonth();
+  if(unpaid>0)T.push(['#d23b56','⏳',`${unpaid} member${unpaid>1?'s have':' has'} not paid for ${MN[+cm.slice(5)-1]} yet`,'Collect',"V.cm=curMonth();V.cf='unpaid';go('collect')"]);
+  const late=S.members.filter(m=>summary(m).mDue>=3).length;
+  if(late)T.push(['#1aa856','💬',`${late} member${late>1?'s owe':' owes'} 3 or more months`,'Remind','remindAll()']);
+  const lb=S.settings.lastBackup;const days=lb?Math.floor((new Date(today())-new Date(lb))/864e5):null;
+  if(S.members.length&&(days===null||days>=30))T.push(['#bd8a17','💾',days===null?'No backup yet — save your records':'Last backup was '+days+' days ago','Backup','backup()']);
+  const rep=S.assets.filter(a=>a.cond==='repair'||a.cond==='bad').length;
+  if(rep)T.push(['#1f5fc9','🔧',`${rep} asset${rep>1?'s need':' needs'} repair`,'View',"V.af='all';go('assets')"]);
+  if(!T.length)return `<div class="tips ok"><span>✅</span><div class="grow"><b>All good, Alhamdulillah</b><div class="s">No pending tasks right now.</div></div></div>`;
+  return `<div class="card tipsc"><div class="ct"><b>Smart reminders</b></div>${T.map(([c,i,t,bt,fn])=>`<div class="tip" style="--c:${c}"><span class="ti">${i}</span><div class="grow">${t}</div><button class="btn sm" style="background:${c}" onclick="${fn}">${bt}</button></div>`).join('')}</div>`}
 function chart6(){
   const ms=[];for(let i=5;i>=0;i--)ms.push(addM(curMonth(),-i));
   const D=ms.map(mo=>({mo,ex:sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee),in:sum(S.payments.filter(p=>p.date.slice(0,7)===mo),p=>p.amount)}));
@@ -380,8 +413,8 @@ function vCollect(){
   return `<div class="monthbar"><button onclick="V.cm=addM(V.cm,-1);render()" aria-label="Previous month">‹</button><b>${mL(mo)}</b><button onclick="V.cm=addM(V.cm,1);render()" aria-label="Next month">›</button></div>
   <div class="stats"><div class="stat"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/></svg>Received this month</div><div class="v">${rs(col)}</div></div><div class="stat c-blue"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Paid / total</div><div class="v">${cnt('paid')} / ${rows.length}</div></div></div>
   <div class="chips">${[['all','All'],['unpaid','Not paid ('+(rows.length-cnt('paid'))+')'],['paid','Paid ('+cnt('paid')+')']].map(([k,l])=>`<button class="chip ${V.cf===k?'on':''}" onclick="V.cf='${k}';render()">${l}</button>`).join('')}</div>
-  <div class="list">${shown.length?shown.map(({m,st})=>`<div class="row">${av(m.name)}<div class="grow" onclick="memberSheet('${m.id}')"><div class="t">${esc(m.name)}</div><div class="s">${esc(m.house||'')}${summary(m).bal>0?' · owes '+rs(summary(m).bal):''}</div></div><span class="pill ${st}">${SL[st]}</span>${st!=='paid'?`<button class="btn sm" onclick="payForm('${m.id}')">Receive</button>`:''}</div>`).join(''):`<div class="empty">${act.length?'Nothing here.':'No active members in this month.'}</div>`}</div>
-  <p class="note">A payment always clears the oldest pending month first.</p>`;
+  <div class="list">${shown.length?shown.map(({m,st})=>`<div class="row">${av(m.name)}<div class="grow" onclick="memberSheet('${m.id}')"><div class="t">${esc(m.name)}</div><div class="s">${esc(m.house||'')}${summary(m).bal>0?' · owes '+rs(summary(m).bal):''}</div></div><span class="pill ${st}">${SL[st]}</span>${st!=='paid'?`<button class="btn sm" onclick="quickPay('${m.id}')">✓ ${rs(m.fee)}</button>`:''}</div>`).join(''):`<div class="empty">${act.length?'Nothing here.':'No active members in this month.'}</div>`}</div>
+  <p class="note">Tap <b>✓</b> to receive one month instantly. Tap a name for a different amount. A payment always clears the oldest pending month first.</p>`;
 }
 
 /* ---------- Expenses ---------- */
@@ -421,10 +454,11 @@ function vMore(){
    <p class="note">Changing the default amount only applies to members you add later.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 5 · Received-by names added</p>
+  <p class="note" style="text-align:center">App version 6 · Smart & professional update</p>
+  <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
-function saveSettings(){S.settings={name:sName.value.trim()||DEF.settings.name,nameUr:sUr.value.trim(),place:sPlace.value.trim(),fee:+sFee.value||500,collectors:sCol.value.trim()};save();render();toast('Settings saved')}
+function saveSettings(){S.settings={...S.settings,name:sName.value.trim()||DEF.settings.name,nameUr:sUr.value.trim(),place:sPlace.value.trim(),fee:+sFee.value||500,collectors:sCol.value.trim()};save();render();toast('Settings saved')}
 function wipe(){if(confirm('Delete ALL data from this phone?')&&confirm('Are you sure? This cannot be undone.')){S=JSON.parse(JSON.stringify(DEF));save();render();toast('All data deleted')}}
 
 /* ---------- Sheet ---------- */
@@ -441,12 +475,12 @@ function memberSheet(id){
    <div class="note" style="margin:-8px 0 12px">${m.father?'s/o '+esc(m.father)+' · ':''}${esc(m.house||'')}${m.phone?' · '+esc(m.phone):''}<br>Rs ${+m.fee}/month since ${mL(m.start)}${m.end?' · left after '+mL(m.end):''}${pu?' · paid up to '+mL(pu):''}</div>
    <div class="sum3"><div><small>Total due</small><b>${rs(s.due)}</b></div><div><small>Paid</small><b>${rs(s.paid)}</b></div><div class="${s.bal>0?'owes':''}"><small>${s.bal<0?'Advance':'Balance'}</small><b>${rs(Math.abs(s.bal))}</b></div></div>
    <div class="btns"><button class="btn" onclick="payForm('${id}')">Receive payment</button></div>
-   <div class="btns" style="margin-top:8px">${s.bal>0?`<button class="btn green" onclick="remind('${id}')">WhatsApp reminder</button>`:''}${m.phone?`<a class="btn ghost" style="text-align:center;text-decoration:none" href="tel:${esc(m.phone)}">Call</a>`:''}<button class="btn ghost" onclick="memberForm('${id}')">Edit</button></div>
+   <div class="btns" style="margin-top:8px">${s.bal>0?`<button class="btn green" onclick="remind('${id}')">WhatsApp reminder</button>`:''}${m.phone?`<a class="btn ghost" style="text-align:center;text-decoration:none" href="tel:${esc(m.phone)}">Call</a>`:''}<button class="btn ghost" onclick="statement('${id}')">Statement</button><button class="btn ghost" onclick="memberForm('${id}')">Edit</button></div>
    <div class="monthbar" style="margin-top:14px"><button onclick="V.gy--;memberSheet('${id}')" aria-label="Previous year">‹</button><b>${y}</b><button onclick="V.gy++;memberSheet('${id}')" aria-label="Next year">›</button></div>
    <div class="grid12">${grid}</div>
    ${+m.arrears?`<p class="note">Includes old dues from before the app: ${rs(m.arrears)}</p>`:''}
    <h2 style="font-size:16px">Payment history</h2>
-   <div class="list">${P.length?P.map(p=>`<div class="row"><div class="grow"><div class="t">${rs(p.amount)}</div><div class="s">${dL(p.date)}${p.by?' · by '+esc(p.by):''}${p.note?' · '+esc(p.note):''}</div></div><button class="mini" onclick="receipt('${p.id}')">Receipt</button><button class="mini" style="color:var(--bad)" onclick="delPay('${p.id}')">Delete</button></div>`).join(''):'<div class="empty">No payments yet.</div>'}</div>`);
+   <div class="list">${P.length?P.map(p=>`<div class="row"><div class="grow" onclick="payForm('','${p.id}')" style="cursor:pointer"><div class="t">${rs(p.amount)} <span class="s">#${p.no||''} ✎</span></div><div class="s">${dL(p.date)}${p.by?' · by '+esc(p.by):''}${p.note?' · '+esc(p.note):''}</div></div><button class="mini" onclick="receipt('${p.id}')">Receipt</button><button class="mini" style="color:var(--bad)" onclick="delPay('${p.id}')">Delete</button></div>`).join(''):'<div class="empty">No payments yet.</div>'}</div>`);
 }
 
 /* ---------- Member form ---------- */
@@ -486,23 +520,38 @@ function saveBulk(){
 }
 
 /* ---------- Payment form ---------- */
-function payForm(id){
-  const act=S.members.filter(m=>!m.end||m.end>=curMonth()).sort((a,b)=>a.name.localeCompare(b.name));
-  const cols=collectorList();
-  const m=id?byId(id):null;
-  openSheet('Receive payment',`
-   <label class="f">Member</label>${m?`<div class="in" style="font-weight:700">${esc(m.name)}</div><input type="hidden" id="pM" value="${id}">`:`<select class="in" id="pM" onchange="payHint()"><option value="">Choose member…</option>${act.map(x=>`<option value="${x.id}">${esc(x.name)}${x.house?' — '+esc(x.house):''}</option>`).join('')}</select>`}
+function payForm(id,pid){
+  const cols=collectorList();const ed=pid?S.payments.find(x=>x.id===pid):null;
+  if(ed)id=ed.memberId;const m=id?byId(id):null;
+  const by=ed?ed.by:(localStorage.getItem(KEY+'_by')||cols[0]||'');
+  openSheet(ed?'Edit payment #'+ed.no:'Receive payment',`
+   <label class="f">Member</label>${m?`<div class="in" style="font-weight:700;display:flex;align-items:center;gap:10px">${av(m.name)}${esc(m.name)}</div><input type="hidden" id="pM" value="${id}">`:`<input class="in" id="pS" placeholder="🔍 Search name, house or phone…" autocomplete="off" oninput="pM.value='';paySearch()"><input type="hidden" id="pM" value=""><div id="pR" class="list" style="margin-top:6px"></div>`}
    <div id="pHint" class="note" style="margin-top:6px"></div>
-   <label class="f">Amount (Rs)</label><input class="in" id="pA" type="number" inputmode="numeric" value="${m?+m.fee:S.settings.fee}">
+   <label class="f">Amount (Rs)</label><input class="in" id="pA" type="number" inputmode="numeric" value="${ed?ed.amount:m?+m.fee:S.settings.fee}" style="font-size:20px;font-weight:800">
    <div class="chips" id="pQ" style="margin-top:8px"></div>
-   <label class="f">Date</label><input class="in" id="pD" type="date" value="${today()}">
+   <label class="f">Date</label><input class="in" id="pD" type="date" value="${ed?ed.date:today()}">
    <label class="f">Received by</label>
-   <div class="chips" id="pBc" style="flex-wrap:wrap">${cols.map(c=>`<button type="button" class="chip ur ${c===(localStorage.getItem(KEY+'_by')||cols[0])?'on':''}" onclick="pick(this);pB.value=this.textContent">${esc(c)}</button>`).join('')}<button type="button" class="chip" onclick="pick(this);pB.value='';pB.focus()">+ Other</button></div>
-   <input class="in" id="pB" dir="auto" list="colList" placeholder="Or write a name" value="${esc(localStorage.getItem(KEY+'_by')||cols[0]||'')}" oninput="document.querySelectorAll('#pBc .chip').forEach(b=>b.classList.toggle('on',b.textContent===this.value))"><datalist id="colList">${cols.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
-   <label class="f">Note (optional)</label><input class="in" id="pN" placeholder="e.g. Paid for Oct and Nov">
-   <button class="btn full" style="margin-top:16px" onclick="savePay()">Save payment</button>`);
+   <div class="chips" id="pBc" style="flex-wrap:wrap">${cols.map(c=>`<button type="button" class="chip ur ${c===by?'on':''}" onclick="pick(this);pB.value=this.textContent">${esc(c)}</button>`).join('')}<button type="button" class="chip" onclick="pick(this);pB.value='';pB.focus()">+ Other</button></div>
+   <input class="in" id="pB" dir="auto" list="colList" placeholder="Or write a name" value="${esc(by)}" oninput="document.querySelectorAll('#pBc .chip').forEach(b=>b.classList.toggle('on',b.textContent===this.value))"><datalist id="colList">${cols.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+   <label class="f">Note (optional)</label><input class="in" id="pN" value="${esc(ed?ed.note:'')}" placeholder="e.g. Paid for Oct and Nov">
+   <button class="btn full" style="margin-top:16px" onclick="savePay('${pid||''}')">${ed?'Save changes':'Save payment'}</button>`);
+  if(m)payHint();else paySearch();
+}
+function paySearch(){
+  const q=(pS.value||'').trim().toLowerCase();
+  let L=S.members.filter(m=>!m.end||m.end>=curMonth()).map(m=>({m,s:summary(m)}));
+  if(q)L=L.filter(({m})=>[m.name,m.father,m.house,m.phone].join(' ').toLowerCase().includes(q));
+  else L=L.filter(x=>x.s.bal>0).sort((a,b)=>b.s.bal-a.s.bal);
+  L=L.slice(0,6);
+  pR.style.display=L.length?'block':'none';
+  pR.innerHTML=(q?'':'<div class="note" style="padding:8px 0 0">Owing most</div>')+L.map(({m,s})=>`<div class="row" onclick="payPick('${m.id}')">${av(m.name)}<div class="grow"><div class="t">${esc(m.name)}</div><div class="s">${esc(m.house||'')}</div></div>${s.bal>0?`<div class="amt red">${rs(s.bal)}</div>`:'<span class="pill paid">Clear</span>'}</div>`).join('');
   payHint();
 }
+function payPick(id){const m=byId(id);pM.value=id;pS.value=m.name;pR.style.display='none';pA.value=m.fee;payHint()}
+function quickPay(id){const m=byId(id);const cols=collectorList();
+  const p={id:uid(),no:nextNo(),memberId:id,amount:+m.fee,date:today(),by:localStorage.getItem(KEY+'_by')||cols[0]||'',note:''};
+  S.payments.push(p);save();render();receiptPrompt(p.id);
+  toast('Received '+rs(p.amount)+' from '+m.name,()=>{S.payments=S.payments.filter(x=>x.id!==p.id);save();closeSheet();render()})}
 function payHint(){
   const m=byId(pM.value);if(!m){pHint.textContent='';pQ.innerHTML='';return}
   const s=summary(m);const f=+m.fee;
@@ -511,13 +560,16 @@ function payHint(){
   if(s.bal>0)q.unshift(`<button class="chip on" onclick="pA.value=${s.bal}">Full balance · ${rs(s.bal)}</button>`);
   pQ.innerHTML=q.join('');if(!pA.value||pA.value=='0')pA.value=f;
 }
-function savePay(){
+function savePay(pid){
   const id=pM.value;const a=+pA.value;
   if(!id){toast('Choose a member');return}if(!(a>0)){toast('Enter an amount above 0');return}if(!pD.value){toast('Choose the date');return}
-  const p={id:uid(),memberId:id,amount:a,date:pD.value,by:pB.value.trim(),note:pN.value.trim()};
+  if(pid){const e=S.payments.find(x=>x.id===pid);Object.assign(e,{amount:a,date:pD.value,by:pB.value.trim(),note:pN.value.trim()});save();render();memberSheet(e.memberId);toast('Payment updated');return}
+  const dup=S.payments.find(x=>x.memberId===id&&x.date===pD.value&&+x.amount===a);
+  if(dup&&!confirm('The same payment ('+rs(a)+' on '+dL(pD.value)+') is already saved for '+byId(id).name+'.\n\nSave it again?'))return;
+  const p={id:uid(),no:nextNo(),memberId:id,amount:a,date:pD.value,by:pB.value.trim(),note:pN.value.trim()};
   S.payments.push(p);try{localStorage.setItem(KEY+'_by',p.by)}catch(e){}save();render();receiptPrompt(p.id);
 }
-function delPay(pid){const p=S.payments.find(x=>x.id===pid);if(!confirm('Delete payment of '+rs(p.amount)+' on '+dL(p.date)+'?'))return;S.payments=S.payments.filter(x=>x.id!==pid);save();render();memberSheet(p.memberId);toast('Payment deleted')}
+function delPay(pid){const i=S.payments.findIndex(x=>x.id===pid);const p=S.payments[i];S.payments.splice(i,1);save();render();memberSheet(p.memberId);toast('Payment of '+rs(p.amount)+' deleted',()=>{S.payments.splice(i,0,p);save();render();memberSheet(p.memberId)})}
 
 /* ---------- WhatsApp ---------- */
 function waNum(ph){let d=String(ph||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.startsWith('0'))d='92'+d.slice(1);else if(d.length===10&&d.startsWith('3'))d='92'+d;return d}
@@ -561,6 +613,7 @@ function receiptText(pid){
   const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`محترم *${m.name}* صاحب`,'',
     `*${st.nameUr||st.name}* (${st.place}) کی جانب سے آپ کا تہہ دل سے شکریہ۔`,'',
     `آپ کا ماہانہ چندہ *${uRs(p.amount)}* بتاریخ ${uDate(p.date)} وصول ہوگیا ہے۔`,''];
+  if(p.no)L.push(`🧾 رسید نمبر: ${p.no}`);
   if(c.old)L.push(`🔹 سابقہ بقایا: ${uRs(c.old)}`);
   if(c.full.length)L.push(`📅 برائے ماہ: *${uMonths(c.full)}*`);
   if(c.part)L.push(`🔸 ${uMon(c.part.mo)} کے لیے جزوی ادائیگی (مزید ${uRs(c.part.left)} باقی)`);
@@ -571,8 +624,16 @@ function receiptText(pid){
   return L.join('\n');
 }
 function receipt(pid){const p=S.payments.find(x=>x.id===pid);wa(byId(p.memberId).phone,receiptText(pid))}
+function statement(id){const m=byId(id);const st=S.settings;const y=V.gy;const s=summary(m);
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`محترم *${m.name}* صاحب`,'',`*${st.nameUr||st.name}* (${st.place})`,`*ماہانہ چندہ کا گوشوارہ — ${y}* 📋`,''];
+  const cm=curMonth();
+  months(y+'-01',y+'-12').forEach(mo=>{const k=mStatus(m,mo);if(k==='na')return;if(mo>cm&&k!=='paid'&&k!=='part')return;
+    L.push(`${k==='paid'?(mo>cm?'💚':'✅'):k==='part'?'🔸':'❌'} ${UM[+mo.slice(5)-1]}: ${k==='paid'?(mo>cm?'پیشگی ادا':'ادا شدہ'):k==='part'?'جزوی ادا':'بقایا'}`)});
+  L.push('',`کل واجب الادا: ${uRs(s.due)}`,`کل ادا شدہ: ${uRs(s.paid)}`);
+  L.push(s.bal>0?`💰 *باقی بقایا: ${uRs(s.bal)}*`:s.bal<0?`✅ *پیشگی جمع: ${uRs(-s.bal)}*`:'✅ *الحمدللہ کوئی بقایا نہیں*');
+  L.push('','جزاک اللہ خیراً 🤲');wa(m.phone,L.join('\n'))}
 function receiptPrompt(pid){const p=S.payments.find(x=>x.id===pid);const m=byId(p.memberId);
-  openSheet('Payment saved ✓',`<div class="stat" style="margin-bottom:12px"><div class="k">${esc(m.name)}</div><div class="v">${rs(p.amount)}</div><div class="note">${dL(p.date)}</div></div>
+  openSheet('Payment saved ✓',`<div class="stat" style="margin-bottom:12px"><div class="k">${esc(m.name)} · Receipt #${p.no||''}</div><div class="v">${rs(p.amount)}</div><div class="note">${dL(p.date)}${p.by?' · '+esc(p.by):''}</div></div>
    <label class="f">Receipt message (Urdu)</label>
    <div class="card" dir="rtl" style="white-space:pre-wrap;font-family:'Noto Nastaliq Urdu','Jameel Noori Nastaleeq',serif;font-size:15px;line-height:2.1;text-align:right">${esc(receiptText(pid)).replace(/\*/g,'')}</div>
    <button class="btn green full" onclick="receipt('${pid}')">Send on WhatsApp</button>
@@ -608,7 +669,7 @@ function saveExp(id){const a=+eA.value;if(!(a>0)){toast('Enter an amount above 0
   const d={cat:eC.value,other:oth,amount:a,date:eD.value||today(),note:eN.value.trim()};
   if(id)Object.assign(S.expenses.find(x=>x.id===id),d);else S.expenses.push({id:uid(),...d});
   save();closeSheet();V.em=d.date.slice(0,7);render();toast(id?'Changes saved':'Kharcha added')}
-function delExp(id){if(!confirm('Delete this kharcha?'))return;S.expenses=S.expenses.filter(x=>x.id!==id);save();closeSheet();render();toast('Kharcha deleted')}
+function delExp(id){const i=S.expenses.findIndex(x=>x.id===id);const e=S.expenses[i];S.expenses.splice(i,1);save();closeSheet();render();toast('Kharcha deleted',()=>{S.expenses.splice(i,0,e);save();render()})}
 
 /* ---------- Backup & export ---------- */
 let DLC=null;(async()=>{try{if(window.claude&&claude.use)DLC=await claude.use('downloads')}catch(_){}})();
@@ -616,8 +677,8 @@ async function dl(name,text,type){const b=new Blob([text],{type});
   if(DLC){try{await DLC.save({filename:name,data:b});return}catch(e){if(e&&e.code==='declined')return;}}
   dlAnchor(name,b)}
 function dlAnchor(name,b){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
-function backup(){dl('masjid-chanda-backup-'+today()+'.json',JSON.stringify(S,null,1),'application/json');toast('Backup downloaded')}
-fileIn.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.members||!d.payments)throw 0;if(!confirm('Replace all data on this phone with this backup ('+d.members.length+' members, '+d.payments.length+' payments)?'))return;d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];d.assets=d.assets||[];S=d;save();render();toast('Backup restored')}catch(_){toast('This file is not a valid backup')}};r.readAsText(f);fileIn.value=''};
+function backup(){S.settings.lastBackup=today();save();if(V.tab==='home')render();dl('masjid-chanda-backup-'+today()+'.json',JSON.stringify(S,null,1),'application/json');toast('Backup downloaded')}
+fileIn.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.members||!d.payments)throw 0;if(!confirm('Replace all data on this phone with this backup ('+d.members.length+' members, '+d.payments.length+' payments)?'))return;d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];d.assets=d.assets||[];numberReceipts(d.payments);S=d;save();render();toast('Backup restored')}catch(_){toast('This file is not a valid backup')}};r.readAsText(f);fileIn.value=''};
 const csvCell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
 function csvMembers(){const rows=[['Name','Father','House','Phone','Monthly','From','Left after','Total due','Paid','Balance','Months pending']];
   S.members.forEach(m=>{const s=summary(m);rows.push([m.name,m.father,m.house,m.phone,m.fee,m.start,m.end,s.due,s.paid,s.bal,s.mDue])});
@@ -680,7 +741,7 @@ function saveAsset(id){const name=aN.value.trim();if(!name){toast('Enter the ite
   const d={name,cat:aC.value,catName:cn,qty:Math.max(1,+aQ.value||1),value:+aV.value||0,cond:picked('aK')||'good',src,donor:src==='donated'?aD.value.trim():'',date:aT.value,place:aP.value.trim(),note:aO.value.trim()};
   if(id)Object.assign(S.assets.find(x=>x.id===id),d);else S.assets.push({id:uid(),...d});
   save();closeSheet();V.tab='assets';render();toast(id?'Changes saved':'Asset added')}
-function delAsset(id){if(!confirm('Delete this asset?'))return;S.assets=S.assets.filter(x=>x.id!==id);save();closeSheet();render();toast('Asset deleted')}
+function delAsset(id){const i=S.assets.findIndex(x=>x.id===id);const a=S.assets[i];S.assets.splice(i,1);save();closeSheet();render();toast('Asset deleted',()=>{S.assets.splice(i,0,a);save();render()})}
 function csvAssets(){const rows=[['Item','Category','Quantity','Value (Rs)','Condition','Bought/Donated','Donor','Date','Location','Note']];
   S.assets.forEach(a=>rows.push([a.name,a.cat==='other'&&a.catName?a.catName:ACAT(a.cat)[1],a.qty,a.value,ACON(a.cond)[1],a.src==='donated'?'Donated':'Bought',a.donor,a.date,a.place,a.note]));
   dl('masjid-assets-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv');toast('Assets list downloaded')}
@@ -763,13 +824,30 @@ function importDo(){const{ok}=importParse();if(!ok.length)return;
   ok.forEach(m=>S.members.push({id:uid(),...m}));save();closeSheet();V.mf='all';V.q='';go('members');toast(ok.length+' members imported')}
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+/* ---------- PIN lock ---------- */
+function pinSetup(){openSheet('Set PIN',`<p class="note" style="margin-top:-6px">Choose 4 digits you will remember. If you forget it, the app can only be opened by clearing its data, so <b>download a backup first</b>.</p>
+  <label class="f">New PIN</label><input class="in" id="pin1" type="password" inputmode="numeric" maxlength="4" style="font-size:24px;letter-spacing:12px;text-align:center">
+  <label class="f">Type it again</label><input class="in" id="pin2" type="password" inputmode="numeric" maxlength="4" style="font-size:24px;letter-spacing:12px;text-align:center">
+  <button class="btn full" style="margin-top:16px" onclick="pinSave()">Save PIN</button>`);setTimeout(()=>pin1.focus(),200)}
+function pinSave(){const a=pin1.value,b=pin2.value;if(!/^\d{4}$/.test(a)){toast('PIN must be 4 digits');return}if(a!==b){toast('The two PINs do not match');return}
+  try{localStorage.setItem(KEY+'_pin',a)}catch(_){}closeSheet();render();toast('PIN lock is on')}
+let pinBuf='';
+function lockShow(){if(!localStorage.getItem(KEY+'_pin')||document.getElementById('lock'))return;pinBuf='';
+  const d=document.createElement('div');d.id='lock';
+  d.innerHTML=`<img src="${document.querySelector('header .logo').src}" alt=""><div class="lt">${esc(S.settings.name)}</div><div class="ls">Enter your PIN</div><div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+   <div class="pad">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k=>k===''?'<span></span>':`<button onclick="pinKey('${k}')">${k}</button>`).join('')}</div>`;
+  document.body.appendChild(d)}
+function pinKey(k){if(k==='⌫')pinBuf=pinBuf.slice(0,-1);else if(pinBuf.length<4)pinBuf+=k;
+  document.querySelectorAll('#dots i').forEach((x,i)=>x.classList.toggle('on',i<pinBuf.length));
+  if(pinBuf.length===4){if(pinBuf===localStorage.getItem(KEY+'_pin')){document.getElementById('lock').remove()}else{const D=document.getElementById('dots');D.classList.add('shake');setTimeout(()=>{D.classList.remove('shake');pinBuf='';document.querySelectorAll('#dots i').forEach(x=>x.classList.remove('on'))},450)}}}
+let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>120000)lockShow()});
 /* Install as app + offline */
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;instBar.style.display='block'});
 async function doInstall(){if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;instBar.style.display='none'}
 window.addEventListener('appinstalled',()=>{instBar.style.display='none';toast('App installed')});
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
-render();
+render();lockShow();
 </script>
 </body>
 </html>
