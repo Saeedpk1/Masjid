@@ -203,6 +203,7 @@ tfoot td{font-weight:800;background:var(--gold-soft)}
 .acat b{font-size:12.5px;opacity:.95}.acat span{font-size:17px;font-weight:800}.acat small{font-size:11.5px;opacity:.85}
 .acat.on{outline:3px solid var(--gold);outline-offset:2px}
 .hero i svg{width:26px;height:26px;color:#fff}
+.chip.ur{font-family:"Noto Nastaliq Urdu","Jameel Noori Nastaleeq",serif;font-size:14px;line-height:1.9;padding:2px 14px}
 </style>
 </head>
 <body>
@@ -234,9 +235,11 @@ tfoot td{font-weight:800;background:var(--gold-soft)}
 <script>
 /* ---------- Data ---------- */
 const KEY='masjid_kbw_chanda_v1';
-const DEF={settings:{name:'Masjid Khalid bin Waleed',nameUr:'مسجد خالد بن ولید',place:'Parrai, Swat',fee:500,collectors:''},members:[],payments:[],expenses:[],assets:[]};
+const DEF_COLS=['محمد حیات','شاہ حسین','فواد حسین'];
+const collectorList=()=>String(S.settings.collectors||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean);
+const DEF={settings:{name:'Masjid Khalid bin Waleed',nameUr:'مسجد خالد بن ولید',place:'Parrai, Swat',fee:500,collectors:'محمد حیات، شاہ حسین، فواد حسین'},members:[],payments:[],expenses:[],assets:[]};
 let S=load();
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.members){d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];d.assets=d.assets||[];return d}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.members){d.settings={...DEF.settings,...d.settings};{const have=String(d.settings.collectors||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean);DEF_COLS.forEach(n=>{if(!have.includes(n))have.push(n)});d.settings.collectors=have.join('، ')}d.expenses=d.expenses||[];d.assets=d.assets||[];return d}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Could not save on this device. Download a backup.')}}
 
 /* ---------- Helpers ---------- */
@@ -414,11 +417,11 @@ function vMore(){
    <label class="f">Name in Urdu</label><input class="in" id="sUr" dir="rtl" value="${esc(s.nameUr)}">
    <label class="f">Place</label><input class="in" id="sPlace" value="${esc(s.place)}">
    <label class="f">Default monthly chanda (Rs)</label><input class="in" id="sFee" type="number" inputmode="numeric" value="${s.fee}">
-   <label class="f">Collectors (comma separated)</label><input class="in" id="sCol" placeholder="e.g. Qari Sahib, Imran, Bilal" value="${esc(s.collectors)}">
+   <label class="f">Collectors (comma separated)</label><input class="in" id="sCol" dir="auto" placeholder="e.g. محمد حیات، شاہ حسین" value="${esc(s.collectors)}">
    <p class="note">Changing the default amount only applies to members you add later.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 4 · Other option in assets &amp; kharcha</p>
+  <p class="note" style="text-align:center">App version 5 · Received-by names added</p>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
 function saveSettings(){S.settings={name:sName.value.trim()||DEF.settings.name,nameUr:sUr.value.trim(),place:sPlace.value.trim(),fee:+sFee.value||500,collectors:sCol.value.trim()};save();render();toast('Settings saved')}
@@ -485,14 +488,17 @@ function saveBulk(){
 /* ---------- Payment form ---------- */
 function payForm(id){
   const act=S.members.filter(m=>!m.end||m.end>=curMonth()).sort((a,b)=>a.name.localeCompare(b.name));
-  const cols=S.settings.collectors.split(',').map(x=>x.trim()).filter(Boolean);
+  const cols=collectorList();
   const m=id?byId(id):null;
   openSheet('Receive payment',`
    <label class="f">Member</label>${m?`<div class="in" style="font-weight:700">${esc(m.name)}</div><input type="hidden" id="pM" value="${id}">`:`<select class="in" id="pM" onchange="payHint()"><option value="">Choose member…</option>${act.map(x=>`<option value="${x.id}">${esc(x.name)}${x.house?' — '+esc(x.house):''}</option>`).join('')}</select>`}
    <div id="pHint" class="note" style="margin-top:6px"></div>
    <label class="f">Amount (Rs)</label><input class="in" id="pA" type="number" inputmode="numeric" value="${m?+m.fee:S.settings.fee}">
    <div class="chips" id="pQ" style="margin-top:8px"></div>
-   <div class="two"><div><label class="f">Date</label><input class="in" id="pD" type="date" value="${today()}"></div><div><label class="f">Received by</label><input class="in" id="pB" list="colList" value="${esc(localStorage.getItem(KEY+'_by')||cols[0]||'')}"><datalist id="colList">${cols.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div></div>
+   <label class="f">Date</label><input class="in" id="pD" type="date" value="${today()}">
+   <label class="f">Received by</label>
+   <div class="chips" id="pBc" style="flex-wrap:wrap">${cols.map(c=>`<button type="button" class="chip ur ${c===(localStorage.getItem(KEY+'_by')||cols[0])?'on':''}" onclick="pick(this);pB.value=this.textContent">${esc(c)}</button>`).join('')}<button type="button" class="chip" onclick="pick(this);pB.value='';pB.focus()">+ Other</button></div>
+   <input class="in" id="pB" dir="auto" list="colList" placeholder="Or write a name" value="${esc(localStorage.getItem(KEY+'_by')||cols[0]||'')}" oninput="document.querySelectorAll('#pBc .chip').forEach(b=>b.classList.toggle('on',b.textContent===this.value))"><datalist id="colList">${cols.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
    <label class="f">Note (optional)</label><input class="in" id="pN" placeholder="e.g. Paid for Oct and Nov">
    <button class="btn full" style="margin-top:16px" onclick="savePay()">Save payment</button>`);
   payHint();
