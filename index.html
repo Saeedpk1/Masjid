@@ -29,7 +29,7 @@ header{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 header::after{content:"";position:absolute;left:0;right:0;bottom:24px;height:3px;background:linear-gradient(90deg,transparent,#e5c26a 20%,#f7e3a1 50%,#e5c26a 80%,transparent);opacity:.9}
 header .logo{width:104px;height:104px;border-radius:50%;object-fit:cover;display:block;margin:2px auto 6px;border:3px solid #e5c26a;box-shadow:0 0 0 6px rgba(229,194,106,.25),0 8px 22px rgba(0,0,0,.35);background:#fff}
 header .ur{font-family:"Noto Nastaliq Urdu","Jameel Noori Nastaleeq",serif;font-size:22px;line-height:1.9;direction:rtl;color:#f7e3a1}
-header h1{margin:0;font-size:18px;font-weight:800;letter-spacing:.2px}
+header h1{margin:0;font-size:18px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
 header .place{font-size:12.5px;color:#cdeedd;margin-top:2px}
 header svg.arch{position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);width:100%;height:26px;z-index:1}
 header svg.arch path{fill:var(--bg)}
@@ -224,6 +224,14 @@ tfoot td{font-weight:800;background:var(--gold-soft)}
 .pad{display:grid;grid-template-columns:repeat(3,72px);gap:14px}
 .pad button{width:72px;height:72px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:26px;font-weight:700}
 .pad button:active{background:rgba(242,207,107,.4)}
+
+.qa{grid-template-columns:repeat(3,1fr)!important}
+.q5{background:linear-gradient(140deg,#6a3fc8,#9a6cf0)}.q6{background:linear-gradient(140deg,#0b8285,#22b7b2)}
+details.box.rep>summary::before{display:none}
+.rdot{width:12px;height:12px;border-radius:4px;transform:rotate(45deg);flex:none}
+.ptitle{display:none}
+tr.fut td{color:var(--muted);opacity:.6}
+@media print{body[data-print] .wrap>*{display:none!important}body[data-print] .wrap>details.psel{display:block!important;box-shadow:none;border:0}body[data-print] .psel .btns,body[data-print] .psel .list{display:none!important}body[data-print] .ptitle{display:block;font-weight:800;font-size:16px;margin-bottom:10px}body[data-print] nav,body[data-print] .fab,body[data-print] #instBar{display:none!important}}
 </style>
 </head>
 <body>
@@ -257,11 +265,11 @@ tfoot td{font-weight:800;background:var(--gold-soft)}
 const KEY='masjid_kbw_chanda_v1';
 const DEF_COLS=['محمد حیات','شاہ حسین','فواد حسین'];
 const collectorList=()=>String(S.settings.collectors||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean);
-const DEF={settings:{name:'Masjid Khalid bin Waleed',nameUr:'مسجد خالد بن ولید',place:'Parrai, Swat',fee:500,collectors:'محمد حیات، شاہ حسین، فواد حسین'},members:[],payments:[],expenses:[],assets:[]};
+const DEF={settings:{name:'Masjid Khalid bin Waleed',nameUr:'مسجد خالد بن ولید',place:'Parrai, Swat',fee:500,collectors:'محمد حیات، شاہ حسین، فواد حسین'},members:[],payments:[],expenses:[],assets:[],donations:[]};
 let S=load();
 function numberReceipts(P){let n=Math.max(0,...P.map(p=>+p.no||0));P.filter(p=>!p.no).sort((a,b)=>(a.date+a.id).localeCompare(b.date+b.id)).forEach(p=>p.no=++n)}
 const nextNo=()=>Math.max(0,...S.payments.map(p=>+p.no||0))+1;
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.members){d.settings={...DEF.settings,...d.settings};{const have=String(d.settings.collectors||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean);DEF_COLS.forEach(n=>{if(!have.includes(n))have.push(n)});d.settings.collectors=have.join('، ')}d.expenses=d.expenses||[];d.assets=d.assets||[];numberReceipts(d.payments);return d}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.members){d.settings={...DEF.settings,...d.settings};{const have=String(d.settings.collectors||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean);DEF_COLS.forEach(n=>{if(!have.includes(n))have.push(n)});d.settings.collectors=have.join('، ')}d.expenses=d.expenses||[];d.assets=d.assets||[];d.donations=d.donations||[];numberReceipts(d.payments);return d}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Could not save on this device. Download a backup.')}}
 
 /* ---------- Helpers ---------- */
@@ -307,10 +315,10 @@ function go(t){V.tab=t;render();window.scrollTo(0,0)}
 function render(){
   const s=S.settings;
   hUr.textContent=s.nameUr;hName.textContent=s.name;hPlace.textContent=s.place+' · Monthly Chanda Record';
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(V.tab==='assets'?'more':V.tab)));
-  main.innerHTML=({home:vHome,members:vMembers,collect:vCollect,expenses:vExpenses,more:vMore,assets:vAssets})[V.tab]();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(V.tab==='assets'?'more':V.tab==='donations'?'home':V.tab)));
+  main.innerHTML=({home:vHome,members:vMembers,collect:vCollect,expenses:vExpenses,more:vMore,assets:vAssets,donations:vDonations})[V.tab]();
   const fab=document.getElementById('fab');
-  const F={members:['+ Add member',()=>memberForm()],collect:['+ Receive',()=>payForm()],expenses:['+ Add kharcha',()=>expForm()],assets:['+ Add asset',()=>assetForm()]}[V.tab];
+  const F={members:['+ Add member',()=>memberForm()],collect:['+ Receive',()=>payForm()],expenses:['+ Add kharcha',()=>expForm()],assets:['+ Add asset',()=>assetForm()],donations:['+ Add donation',()=>donForm()]}[V.tab];
   if(F){fab.style.display='block';fab.textContent=F[0];fab.onclick=F[1]}else fab.style.display='none';
   if(V.tab==='members')drawMembers();
 }
@@ -319,6 +327,8 @@ function render(){
 function hijri(){try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}catch(_){return''}}
 function greet(){const h=new Date().getHours();return h<12?'Subah bakhair':h<17?'Good afternoon':'Shaam bakhair'}
 const IC={
+ gift:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13M12 8c-2-4-7-4-6-1 .5 1.5 3 1 6 1zM12 8c2-4 7-4 6-1-.5 1.5-3 1-6 1z"/></svg>',
+ chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
  box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/></svg>',
  recv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2.5"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5h.01M18 15.5h.01"/></svg>',
  add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5 1.6 0 3 .5 4.1 1.4M18 13v7M14.5 16.5h7"/></svg>',
@@ -330,7 +340,7 @@ function vHome(){
   const paidCnt=act.filter(m=>mStatus(m,cm)==='paid').length;
   const pend=sum(S.members,m=>Math.max(0,summary(m).bal));
   const owing=S.members.filter(m=>summary(m).bal>0).length;
-  const cash=sum(S.payments,p=>p.amount)-sum(S.expenses,e=>e.amount);
+  const cash=cashInHand();
   const spent=sum(S.expenses.filter(e=>e.date.slice(0,7)===cm),e=>e.amount);
   const pct=exp?Math.min(100,Math.round(col/exp*100)):0;
   const hj=hijri();
@@ -345,15 +355,17 @@ function vHome(){
    <div class="grow"><div class="hk">${mL(cm)} chanda</div><div class="hv">${rs(col)}</div><div class="hs">of ${rs(exp)} expected</div><div class="hb"><span>✓ ${paidCnt} paid</span><span>⏳ ${act.length-paidCnt} remaining</span></div></div>
   </div>
   <div class="qa">
-   <button onclick="payForm()"><i class="q1">${IC.recv}</i>Receive</button>
-   <button onclick="go('members');memberForm()"><i class="q2">${IC.add}</i>Add member</button>
+   <button onclick="payForm()"><i class="q1">${IC.recv}</i>Monthly chanda</button>
+   <button onclick="donForm()"><i class="q5">${IC.gift}</i>Donation</button>
    <button onclick="remindAll()"><i class="q3">${IC.wa}${owing?`<b>${owing}</b>`:''}</i>Reminders</button>
+   <button onclick="go('members');memberForm()"><i class="q2">${IC.add}</i>Add member</button>
+   <button onclick="go('donations')"><i class="q6">${IC.chart}</i>Donations list</button>
    <button onclick="go('assets')"><i class="q4">${IC.box}</i>Assets</button>
   </div>
   <div class="stats">
    <div class="stat c-rose"><div class="k">Total pending</div><div class="v">${rs(pend)}</div><div class="note">${owing} ${owing==1?'member owes':'members owe'}</div></div>
-   <div class="stat c-gold"><div class="k">Cash in hand</div><div class="v">${rs(cash)}</div><div class="note">after all kharcha</div></div>
-   <div class="stat c-blue"><div class="k">Members</div><div class="v">${act.length}</div><div class="note">active this month</div></div>
+   <div class="stat c-gold"><div class="k">Cash in hand</div><div class="v">${rs(cash)}</div><div class="note">incl. donations</div></div>
+   <div class="stat c-blue" style="cursor:pointer" onclick="go('donations')"><div class="k">Donations in ${MN[+cm.slice(5)-1]}</div><div class="v">${rs(donIn(cm))}</div><div class="note">separate from chanda</div></div>
    <div class="stat c-purple"><div class="k">Spent in ${MN[+cm.slice(5)-1]}</div><div class="v">${rs(spent)}</div><div class="note">masjid kharcha</div></div>
   </div>
   ${smartTips(act.length-paidCnt)}
@@ -422,28 +434,53 @@ const expName=e=>e.cat==='Other'&&e.other?e.other:e.cat;
 const CATS=['Electricity bill','Imam salary','Muazzin salary','Gas bill','Water','Repairs','Cleaning','Other'];
 function vExpenses(){
   const mo=V.em;const L=S.expenses.filter(e=>e.date.slice(0,7)===mo).sort((a,b)=>b.date.localeCompare(a.date));
-  const inM=sum(S.payments.filter(p=>p.date.slice(0,7)===mo),p=>p.amount);const out=sum(L,e=>e.amount);
+  const inM=chandaIn(mo)+donIn(mo);const out=sum(L,e=>e.amount);
   return `<div class="monthbar"><button onclick="V.em=addM(V.em,-1);render()" aria-label="Previous month">‹</button><b>${mL(mo)}</b><button onclick="V.em=addM(V.em,1);render()" aria-label="Next month">›</button></div>
-  <div class="stats"><div class="stat"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/></svg>Chanda received</div><div class="v">${rs(inM)}</div></div><div class="stat c-rose"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Kharcha (spent)</div><div class="v">${rs(out)}</div></div><div class="stat wide c-gold"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved this month</div><div class="v">${rs(inM-out)}</div></div></div>
+  <div class="stats"><div class="stat"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/></svg>Chanda + donations</div><div class="v">${rs(inM)}</div></div><div class="stat c-rose"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Kharcha (spent)</div><div class="v">${rs(out)}</div></div><div class="stat wide c-gold"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved this month</div><div class="v">${rs(inM-out)}</div></div></div>
   <div class="list">${L.length?L.map(e=>`<div class="row" onclick="expForm('${e.id}')">${av(expName(e),true)}<div class="grow"><div class="t">${esc(expName(e))}</div><div class="s">${dL(e.date)}${e.note?' · '+esc(e.note):''}</div></div><div class="amt red">${rs(e.amount)}</div></div>`).join(''):'<div class="empty">No kharcha recorded for this month.</div>'}</div>`;
 }
 
 /* ---------- Reports & settings ---------- */
 function vMore(){
   const at=sum(S.assets,a=>a.value);
-  const y=V.ry;const ms=months(y+'-01',y+'-12');
-  const R=ms.map(mo=>({mo,ex:sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee),in:sum(S.payments.filter(p=>p.date.slice(0,7)===mo),p=>p.amount),out:sum(S.expenses.filter(e=>e.date.slice(0,7)===mo),e=>e.amount)}));
-  const s=S.settings;
-  return `<details class="box" open><summary>Yearly report</summary><div class="boxin">
-   <div class="monthbar"><button onclick="V.ry--;render()" aria-label="Previous year">‹</button><b>${y}</b><button onclick="V.ry++;render()" aria-label="Next year">›</button></div>
-   <div class="scroll"><table><thead><tr><th>Month</th><th>Should come</th><th>Received</th><th>Spent</th><th>Saved</th></tr></thead><tbody>${R.map(r=>`<tr><td>${MN[+r.mo.slice(5)-1]}</td><td>${rs(r.ex)}</td><td>${rs(r.in)}</td><td>${rs(r.out)}</td><td>${rs(r.in-r.out)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(R,r=>r.ex))}</td><td>${rs(sum(R,r=>r.in))}</td><td>${rs(sum(R,r=>r.out))}</td><td>${rs(sum(R,r=>r.in-r.out))}</td></tr></tfoot></table></div>
-   <div class="btns" style="margin-top:12px"><button class="btn gold" onclick="window.print()">Print</button><button class="btn green" onclick="shareSummary()">Share on WhatsApp</button></div>
+  const y=V.ry;const ms=months(y+'-01',y+'-12');const cm=curMonth();
+  const C=ms.map(mo=>({mo,ex:sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee),in:chandaIn(mo)}));
+  const Y=S.donations.filter(d=>d.date.slice(0,4)==String(y));
+  const D=ms.map(mo=>({mo,n:Y.filter(d=>d.date.slice(0,7)===mo).length,v:donIn(mo)}));
+  const I=ms.map(mo=>({mo,c:chandaIn(mo),d:donIn(mo),e:spentIn(mo)}));
+  const mn=mo=>MN[+mo.slice(5)-1];const s=S.settings;
+  const top=[...Y].sort((a,b)=>b.amount-a.amount).slice(0,5);
+  return `<div class="monthbar" style="margin-top:8px"><button onclick="V.ry--;render()" aria-label="Previous year">‹</button><b>Reports ${y}</b><button onclick="V.ry++;render()" aria-label="Next year">›</button></div>
+  <details class="box rep" open><summary><span class="rdot" style="background:#0e7a52"></span>Monthly chanda report</summary><div class="boxin">
+   <div class="ptitle">${esc(s.name)} — Monthly chanda report ${y}</div>
+   <div class="scroll"><table><thead><tr><th>Month</th><th>Expected</th><th>Received</th><th>%</th></tr></thead><tbody>${C.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}</td><td>${rs(r.ex)}</td><td>${rs(r.in)}</td><td>${r.ex?Math.round(r.in/r.ex*100)+'%':'—'}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(C,r=>r.ex))}</td><td>${rs(sum(C,r=>r.in))}</td><td>${sum(C,r=>r.ex)?Math.round(sum(C,r=>r.in)/sum(C,r=>r.ex)*100)+'%':'—'}</td></tr></tfoot></table></div>
+   <p class="note">Total pending from members now: <b style="color:var(--bad)">${rs(sum(S.members,m=>Math.max(0,summary(m).bal)))}</b></p>
+   <div class="btns"><button class="btn green" onclick="shareChandaYear()">Share in Urdu</button><button class="btn gold" onclick="printSec(this)">Print</button></div>
+  </div></details>
+  <details class="box rep" open><summary><span class="rdot" style="background:#7c3aed"></span>Donations report</summary><div class="boxin">
+   <div class="ptitle">${esc(s.name)} — Donations report ${y}</div>
+   ${Y.length?`<div class="sum3"><div style="background:linear-gradient(140deg,#6a3fc8,#9a6cf0)"><small>Total</small><b>${rs(sum(Y,d=>d.amount))}</b></div><div style="background:linear-gradient(140deg,#1f5fc9,#4a93f2)"><small>Donations</small><b>${Y.length}</b></div><div><small>Donors</small><b>${new Set(Y.map(d=>d.anon?d.id:d.name)).size}</b></div></div>
+   <h2 style="font-size:15px;margin-top:4px">By purpose</h2>
+   <div class="scroll"><table><thead><tr><th>Purpose</th><th>Count</th><th>Amount</th></tr></thead><tbody>${(()=>{const g={};Y.forEach(d=>{const k=donType(d);g[k]=g[k]||{n:0,v:0};g[k].n++;g[k].v+=+d.amount});return Object.entries(g).sort((a,b)=>b[1].v-a[1].v).map(([k,x])=>`<tr><td>${esc(k)}</td><td>${x.n}</td><td>${rs(x.v)}</td></tr>`).join('')})()}</tbody></table></div>
+   <h2 style="font-size:15px">By month</h2>
+   <div class="scroll"><table><thead><tr><th>Month</th><th>Count</th><th>Amount</th></tr></thead><tbody>${D.filter(r=>r.n).map(r=>`<tr><td>${mn(r.mo)}</td><td>${r.n}</td><td>${rs(r.v)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${Y.length}</td><td>${rs(sum(Y,d=>d.amount))}</td></tr></tfoot></table></div>
+   <h2 style="font-size:15px">Top donors</h2>
+   <div class="list">${top.map(d=>`<div class="row" onclick="donForm('${d.id}')">${av(d.anon?'?':d.name)}<div class="grow"><div class="t">${esc(donName(d))}</div><div class="s">${dL(d.date)} · ${esc(donType(d))}</div></div><div class="amt green">${rs(d.amount)}</div></div>`).join('')}</div>
+   <div class="btns" style="margin-top:12px"><button class="btn green" onclick="shareDonYear(false)">Share totals</button><button class="btn green" onclick="shareDonYear(true)">Share with names</button></div>
+   <div class="btns" style="margin-top:8px"><button class="btn gold" onclick="printSec(this)">Print</button><button class="btn ghost" onclick="go('donations')">All donations ›</button></div>`:`<div class="empty">No donations recorded in ${y}.<br><br><button class="btn" style="background:linear-gradient(135deg,#6a3fc8,#9a6cf0)" onclick="donForm()">Add donation</button></div>`}
+  </div></details>
+  <details class="box rep"><summary><span class="rdot" style="background:#bd8a17"></span>Income & kharcha summary</summary><div class="boxin">
+   <div class="ptitle">${esc(s.name)} — Income & kharcha ${y}</div>
+   <div class="scroll"><table><thead><tr><th>Month</th><th>Chanda</th><th>Donations</th><th>Kharcha</th><th>Saved</th></tr></thead><tbody>${I.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}</td><td>${rs(r.c)}</td><td>${rs(r.d)}</td><td>${rs(r.e)}</td><td>${rs(r.c+r.d-r.e)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(I,r=>r.c))}</td><td>${rs(sum(I,r=>r.d))}</td><td>${rs(sum(I,r=>r.e))}</td><td>${rs(sum(I,r=>r.c+r.d-r.e))}</td></tr></tfoot></table></div>
+   <p class="note">Cash in hand now (all years): <b>${rs(cashInHand())}</b></p>
+   <div class="btns"><button class="btn green" onclick="shareIncomeYear()">Share in Urdu</button><button class="btn gold" onclick="printSec(this)">Print</button></div>
+   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="shareSummary()">This month's report (Urdu)</button></div>
   </div></details>
   <div class="hero" style="cursor:pointer" onclick="go('assets')"><i style="width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:none;background:linear-gradient(140deg,#e7c25f,#bf8f1c)">${IC.box}</i><div class="grow"><div class="hk">Masjid assets</div><div class="hv" style="font-size:22px">${rs(at)}</div><div class="hs">${S.assets.length} items · tap to view report</div></div><b style="font-size:22px">›</b></div>
   <details class="box"><summary>Download & backup</summary><div class="boxin">
    <p class="note" style="margin-top:0">All data stays on this phone. Download a backup every month and keep it safe (WhatsApp it to yourself or save to Google Drive).</p>
    <div class="btns"><button class="btn" onclick="backup()">Download backup</button><button class="btn ghost" onclick="fileIn.click()">Restore backup</button></div>
-   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="csvMembers()">Members list (Excel)</button><button class="btn ghost" onclick="csvPayments()">All payments (Excel)</button></div>
+   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="csvMembers()">Members list (Excel)</button><button class="btn ghost" onclick="csvPayments()">All payments (Excel)</button><button class="btn ghost" onclick="csvDonations()">Donations (Excel)</button></div>
   </div></details>
   <details class="box"><summary>Masjid settings</summary><div class="boxin">
    <label class="f">Masjid name</label><input class="in" id="sName" value="${esc(s.name)}">
@@ -454,7 +491,7 @@ function vMore(){
    <p class="note">Changing the default amount only applies to members you add later.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 6 · Smart & professional update</p>
+  <p class="note" style="text-align:center">App version 7 · Donations & separate reports</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -641,9 +678,9 @@ function receiptPrompt(pid){const p=S.payments.find(x=>x.id===pid);const m=byId(
 function shareSummary(){const cm=curMonth();const st=S.settings;
   const inM=sum(S.payments.filter(p=>p.date.slice(0,7)===cm),p=>p.amount),out=sum(S.expenses.filter(e=>e.date.slice(0,7)===cm),e=>e.amount);
   const act=S.members.filter(m=>activeIn(m,cm));const paid=act.filter(m=>mStatus(m,cm)==='paid').length;
-  const cash=sum(S.payments,p=>p.amount)-sum(S.expenses,e=>e.amount);const pend=sum(S.members,m=>Math.max(0,summary(m).bal));
+  const cash=cashInHand();const pend=sum(S.members,m=>Math.max(0,summary(m).bal));
   const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*ماہانہ رپورٹ — ${uMon(cm)}* 📋`,'',
-   `👥 چندہ ادا کرنے والے: ${paid} از ${act.length} اراکین`,`💚 وصول شدہ چندہ: *${uRs(inM)}*`,`🧾 مسجد کے اخراجات: ${uRs(out)}`];
+   `👥 چندہ ادا کرنے والے: ${paid} از ${act.length} اراکین`,`💚 وصول شدہ چندہ: *${uRs(inM)}*`,`🎁 عطیات: *${uRs(donIn(cm))}*`,`🧾 مسجد کے اخراجات: ${uRs(out)}`];
   const ex=S.expenses.filter(e=>e.date.slice(0,7)===cm);
   CATS.filter(c=>c!=='Other').forEach(c=>{const v=sum(ex.filter(e=>e.cat===c),e=>e.amount);if(v)L.push(`    • ${CATU[c]||c}: ${uRs(v)}`)});
   const og={};ex.filter(e=>e.cat==='Other').forEach(e=>{const k=e.other||'دیگر';og[k]=(og[k]||0)+(+e.amount||0)});Object.entries(og).forEach(([k,v])=>L.push(`    • ${k}: ${uRs(v)}`));
@@ -678,7 +715,7 @@ async function dl(name,text,type){const b=new Blob([text],{type});
   dlAnchor(name,b)}
 function dlAnchor(name,b){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function backup(){S.settings.lastBackup=today();save();if(V.tab==='home')render();dl('masjid-chanda-backup-'+today()+'.json',JSON.stringify(S,null,1),'application/json');toast('Backup downloaded')}
-fileIn.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.members||!d.payments)throw 0;if(!confirm('Replace all data on this phone with this backup ('+d.members.length+' members, '+d.payments.length+' payments)?'))return;d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];d.assets=d.assets||[];numberReceipts(d.payments);S=d;save();render();toast('Backup restored')}catch(_){toast('This file is not a valid backup')}};r.readAsText(f);fileIn.value=''};
+fileIn.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.members||!d.payments)throw 0;if(!confirm('Replace all data on this phone with this backup ('+d.members.length+' members, '+d.payments.length+' payments)?'))return;d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];d.assets=d.assets||[];d.donations=d.donations||[];numberReceipts(d.payments);S=d;save();render();toast('Backup restored')}catch(_){toast('This file is not a valid backup')}};r.readAsText(f);fileIn.value=''};
 const csvCell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
 function csvMembers(){const rows=[['Name','Father','House','Phone','Monthly','From','Left after','Total due','Paid','Balance','Months pending']];
   S.members.forEach(m=>{const s=summary(m);rows.push([m.name,m.father,m.house,m.phone,m.fee,m.start,m.end,s.due,s.paid,s.bal,s.mDue])});
@@ -753,6 +790,103 @@ function shareAssets(){const st=S.settings,A=S.assets,tot=sum(A,a=>a.value);
   if(don)L.push(`🎁 عطیہ شدہ اشیاء کی مالیت: ${uRs(don)}`);
   if(rep)L.push(`🔧 مرمت طلب / خراب اشیاء: ${rep}`);
   L.push('','نوٹ: تمام رقوم تخمینی ہیں۔','','جزاک اللہ خیراً 🤲');
+  window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
+
+/* ---------- Donations (عطیات) ---------- */
+const DTYPES=[['general','General','عام عطیہ','#0e7a52'],['construction','Construction','تعمیرات مسجد','#bd8a17'],['ramadan','Ramadan & Iftar','رمضان و افطاری','#7c3aed'],['juma','Juma box','جمعہ کا چندہ','#1f5fc9'],['quran','Quran & books','قرآن مجید و کتب','#0b8285'],['utility','Bills & utilities','بلز','#c2410c'],['other','Other','دیگر','#5d7268']];
+const DT=k=>DTYPES.find(t=>t[0]===k)||DTYPES[0];
+const donType=d=>d.type==='other'&&d.other?d.other:DT(d.type)[1];
+const donTypeUr=d=>d.type==='other'&&d.other?d.other:DT(d.type)[2];
+const donName=d=>d.anon?'Anonymous':d.name||'Anonymous';
+const nextDNo=()=>Math.max(0,...S.donations.map(d=>+d.no||0))+1;
+V.dy=new Date().getFullYear();V.dt='all';
+function vDonations(){
+  const y=V.dy;const Y=S.donations.filter(d=>d.date.slice(0,4)==String(y));const tot=sum(Y,d=>d.amount);
+  const cm=curMonth();const mon=sum(S.donations.filter(d=>d.date.slice(0,7)===cm),d=>d.amount);
+  const byT=DTYPES.map(t=>({t,L:Y.filter(d=>d.type===t[0])})).filter(x=>x.L.length);
+  const L=Y.filter(d=>V.dt==='all'||d.type===V.dt).sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
+  return `<button class="mini" style="margin:6px 0 2px;font-size:14px" onclick="go('home')">‹ Home</button>
+  <div class="hero" style="background:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.09' stroke-width='1.2'%3E%3Crect x='17' y='17' width='22' height='22'/%3E%3Crect x='17' y='17' width='22' height='22' transform='rotate(45 28 28)'/%3E%3C/g%3E%3C/svg%3E&quot;),linear-gradient(135deg,#6a3fc8,#7c3aed 50%,#9a6cf0);box-shadow:0 12px 28px rgba(124,58,237,.35)"><i style="width:60px;height:60px;border-radius:18px;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.18)">${IC.gift}</i><div class="grow"><div class="hk" style="color:#e9ddff">Donations in ${y}</div><div class="hv">${rs(tot)}</div><div class="hs" style="color:#e9ddff">${Y.length} donation${Y.length==1?'':'s'} · this month ${rs(mon)}</div></div></div>
+  <div class="monthbar"><button onclick="V.dy--;render()" aria-label="Previous year">‹</button><b>${y}</b><button onclick="V.dy++;render()" aria-label="Next year">›</button></div>
+  ${byT.length?`<div class="acats">${byT.map(({t,L})=>`<button class="acat ${V.dt===t[0]?'on':''}" style="--c:${t[3]}" onclick="V.dt=V.dt==='${t[0]}'?'all':'${t[0]}';render()"><b>${t[1]}</b><span>${rs(sum(L,d=>d.amount))}</span><small>${L.length} donation${L.length>1?'s':''}</small></button>`).join('')}</div>`:''}
+  <div class="list">${L.length?L.map(d=>`<div class="row" onclick="donForm('${d.id}')">${av(d.anon?'?':d.name)}<div class="grow"><div class="t">${esc(donName(d))}</div><div class="s">#D${d.no} · ${dL(d.date)} · ${esc(donType(d))}${d.method==='online'?' · online':''}</div></div><div class="amt green">${rs(d.amount)}</div></div>`).join(''):`<div class="empty">${S.donations.length?'No donations here.':'<b>No donations yet</b><br>Record donations separately from monthly chanda — Juma box, construction, Ramadan and more.<br><br><button class="btn" onclick="donForm()">Add first donation</button>'}</div>`}</div>`;
+}
+function donForm(id){
+  const ed=id?S.donations.find(x=>x.id===id):null;const cols=collectorList();
+  const d=ed||{name:'',phone:'',amount:'',date:today(),type:'general',other:'',method:'cash',by:localStorage.getItem(KEY+'_by')||cols[0]||'',note:'',anon:false};
+  const names=[...new Set([...S.members.map(m=>m.name),...S.donations.filter(x=>!x.anon).map(x=>x.name)])].filter(Boolean);
+  openSheet(ed?'Edit donation #D'+ed.no:'Add donation',`
+   <label class="f">Donor name</label><input class="in" id="dN" dir="auto" list="dNl" value="${esc(d.anon?'':d.name)}" placeholder="Name of the person" oninput="donFill()" ${d.anon?'disabled':''}><datalist id="dNl">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+   <label style="display:flex;gap:8px;align-items:center;margin:8px 0 0;font-weight:600;font-size:14px"><input type="checkbox" id="dAn" ${d.anon?'checked':''} onchange="dN.disabled=this.checked;if(this.checked)dN.value=''"> Anonymous (name not to be shown)</label>
+   <label class="f">Mobile (optional, for WhatsApp receipt)</label><input class="in" id="dP" type="tel" inputmode="tel" value="${esc(d.phone)}" placeholder="03xx xxxxxxx">
+   <label class="f">Amount (Rs)</label><input class="in" id="dA" type="number" inputmode="numeric" value="${d.amount}" style="font-size:20px;font-weight:800" placeholder="0">
+   <div class="chips" style="margin-top:8px">${[500,1000,2000,5000,10000].map(v=>`<button type="button" class="chip" onclick="dA.value=${v}">${rs(v)}</button>`).join('')}</div>
+   <label class="f">Purpose</label><div class="chips" id="dT" style="flex-wrap:wrap">${DTYPES.map(t=>`<button type="button" class="chip ${t[0]===d.type?'on':''}" data-v="${t[0]}" onclick="pick(this);dXw.style.display=this.dataset.v==='other'?'block':'none'">${t[1]}</button>`).join('')}</div>
+   <div id="dXw" style="display:${d.type==='other'?'block':'none'}"><label class="f">Write the purpose *</label><input class="in" id="dX" dir="auto" value="${esc(d.other||'')}" placeholder="e.g. Solar panels, New fans"></div>
+   <div class="two"><div><label class="f">Date</label><input class="in" id="dD" type="date" value="${d.date}"></div><div><label class="f">Paid by</label><div class="chips" id="dM">${[['cash','Cash'],['online','Online']].map(([k,l])=>`<button type="button" class="chip ${k===d.method?'on':''}" data-v="${k}" onclick="pick(this)">${l}</button>`).join('')}</div></div></div>
+   <label class="f">Received by</label><div class="chips" id="dBc" style="flex-wrap:wrap">${cols.map(c=>`<button type="button" class="chip ur ${c===d.by?'on':''}" onclick="pick(this);dB.value=this.textContent">${esc(c)}</button>`).join('')}</div>
+   <input class="in" id="dB" dir="auto" value="${esc(d.by)}" placeholder="Or write a name">
+   <label class="f">Note (optional)</label><input class="in" id="dO" value="${esc(d.note)}">
+   <button class="btn full" style="margin-top:16px;background:linear-gradient(135deg,#6a3fc8,#9a6cf0)" onclick="saveDon('${id||''}')">${ed?'Save changes':'Save donation'}</button>
+   ${ed?`<div class="btns" style="margin-top:8px"><button class="btn green" onclick="donReceipt('${id}')">Send receipt</button><button class="btn red" onclick="delDon('${id}')">Delete</button></div>`:''}`);
+}
+function donFill(){const m=S.members.find(x=>x.name===dN.value.trim());if(m&&m.phone&&!dP.value)dP.value=m.phone}
+function saveDon(id){const a=+dA.value;const anon=dAn.checked;const name=dN.value.trim();
+  if(!anon&&!name){toast('Write the donor name or tick Anonymous');dN.focus();return}
+  if(!(a>0)){toast('Enter an amount above 0');dA.focus();return}
+  const type=picked('dT')||'general';const other=type==='other'?dX.value.trim():'';if(type==='other'&&!other){toast('Write the purpose');dX.focus();return}
+  const d={name:anon?'':name,anon,phone:dP.value.trim(),amount:a,date:dD.value||today(),type,other,method:picked('dM')||'cash',by:dB.value.trim(),note:dO.value.trim()};
+  try{if(d.by)localStorage.setItem(KEY+'_by',d.by)}catch(_){}
+  if(id){Object.assign(S.donations.find(x=>x.id===id),d);save();closeSheet();render();toast('Donation updated');return}
+  const n={id:uid(),no:nextDNo(),...d};S.donations.push(n);save();V.tab='donations';V.dy=+n.date.slice(0,4);render();donPrompt(n.id)}
+function delDon(id){const i=S.donations.findIndex(x=>x.id===id);const d=S.donations[i];S.donations.splice(i,1);save();closeSheet();render();toast('Donation deleted',()=>{S.donations.splice(i,0,d);save();render()})}
+function donText(id){const d=S.donations.find(x=>x.id===id);const st=S.settings;
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ',''];
+  if(!d.anon&&d.name)L.push(`محترم *${d.name}* صاحب`,'');
+  L.push(`*${st.nameUr||st.name}* (${st.place}) کے لیے آپ کا عطیہ *${uRs(d.amount)}* بتاریخ ${uDate(d.date)} شکریہ کے ساتھ وصول ہوگیا ہے۔`,'');
+  L.push(`🧾 رسید نمبر: ع-${d.no}`,`🎯 مد: ${donTypeUr(d)}`);
+  if(d.method==='online')L.push('💳 ادائیگی: آن لائن');
+  if(d.by)L.push(`👤 وصول کنندہ: ${d.by}`);
+  L.push('','اللہ تعالیٰ آپ کے اس صدقہ جاریہ کو قبول فرمائے اور دنیا و آخرت میں بہترین اجر عطا فرمائے۔ آمین','','جزاک اللہ خیراً 🤲');
+  return L.join('\n')}
+function donReceipt(id){const d=S.donations.find(x=>x.id===id);wa(d.phone,donText(id))}
+function donPrompt(id){const d=S.donations.find(x=>x.id===id);
+  openSheet('Donation saved ✓',`<div class="stat c-purple" style="margin-bottom:12px"><div class="k">${esc(donName(d))} · Receipt #D${d.no}</div><div class="v">${rs(d.amount)}</div><div class="note">${dL(d.date)} · ${esc(donType(d))}</div></div>
+   <label class="f">Receipt message (Urdu)</label>
+   <div class="card" dir="rtl" style="white-space:pre-wrap;font-family:'Noto Nastaliq Urdu','Jameel Noori Nastaleeq',serif;font-size:15px;line-height:2.1;text-align:right">${esc(donText(id)).replace(/\*/g,'')}</div>
+   <button class="btn green full" onclick="donReceipt('${id}')">Send on WhatsApp</button>
+   <button class="btn ghost full" style="margin-top:8px" onclick="closeSheet()">Done</button>`)}
+function csvDonations(){const rows=[['Receipt','Date','Donor','Mobile','Amount','Purpose','Paid by','Received by','Note']];
+  [...S.donations].sort((a,b)=>a.no-b.no).forEach(d=>rows.push(['D'+d.no,d.date,donName(d),d.phone,d.amount,donType(d),d.method==='online'?'Online':'Cash',d.by,d.note]));
+  dl('masjid-donations-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv');toast('Donations downloaded')}
+/* ---------- Year reports ---------- */
+const chandaIn=mo=>sum(S.payments.filter(p=>p.date.slice(0,7)===mo),p=>p.amount);
+const donIn=mo=>sum(S.donations.filter(d=>d.date.slice(0,7)===mo),d=>d.amount);
+const spentIn=mo=>sum(S.expenses.filter(e=>e.date.slice(0,7)===mo),e=>e.amount);
+const cashInHand=()=>sum(S.payments,p=>p.amount)+sum(S.donations,d=>d.amount)-sum(S.expenses,e=>e.amount);
+function printSec(btn){const box=btn.closest('details');box.open=true;box.classList.add('psel');document.body.dataset.print='1';window.print()}
+window.addEventListener('afterprint',()=>{delete document.body.dataset.print;document.querySelectorAll('.psel').forEach(x=>x.classList.remove('psel'))});
+function shareChandaYear(){const y=V.ry,st=S.settings;const ms=months(y+'-01',y+'-12').filter(mo=>mo<=curMonth());
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*ماہانہ چندہ کی سالانہ رپورٹ — ${y}* 📋`,''];
+  ms.forEach(mo=>{const ex=sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee),r=chandaIn(mo);if(ex||r)L.push(`▪️ ${UM[+mo.slice(5)-1]}: ${uRs(r)} وصول (${uRs(ex)} میں سے)`)});
+  const tr=sum(ms,mo=>chandaIn(mo)),te=sum(ms,mo=>sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee));
+  L.push('',`💚 *کل وصول شدہ چندہ: ${uRs(tr)}*`,`📌 کل متوقع: ${uRs(te)}`,`⏳ موجودہ کل بقایا جات: ${uRs(sum(S.members,m=>Math.max(0,summary(m).bal)))}`,'','جزاک اللہ خیراً 🤲');
+  window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
+function shareDonYear(withNames){const y=V.ry,st=S.settings;const Y=S.donations.filter(d=>d.date.slice(0,4)==String(y));
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*عطیات کی رپورٹ — ${y}* 🎁`,''];
+  DTYPES.forEach(t=>{const X=Y.filter(d=>d.type===t[0]);if(!X.length)return;
+    if(t[0]==='other'){const g={};X.forEach(d=>{const k=d.other||'دیگر';g[k]=(g[k]||0)+(+d.amount)});Object.entries(g).forEach(([k,v])=>L.push(`▪️ ${k}: ${uRs(v)}`))}
+    else L.push(`▪️ ${t[2]}: ${uRs(sum(X,d=>d.amount))}`)});
+  if(withNames&&Y.length){L.push('','*عطیہ دہندگان:*');[...Y].sort((a,b)=>b.amount-a.amount).forEach(d=>L.push(`    • ${d.anon||!d.name?'ایک صاحب خیر':d.name}: ${uRs(d.amount)}`))}
+  L.push('',`💰 *کل عطیات: ${uRs(sum(Y,d=>d.amount))}*`,`🧾 تعداد: ${Y.length}`,'','اللہ تعالیٰ تمام عطیہ دہندگان کو جزائے خیر عطا فرمائے۔ آمین 🤲');
+  window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
+function shareIncomeYear(){const y=V.ry,st=S.settings;const ms=months(y+'-01',y+'-12');
+  const c=sum(ms,chandaIn),d=sum(ms,donIn),e=sum(ms,spentIn);
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*آمدن و اخراجات — ${y}* 📊`,'',`💚 ماہانہ چندہ: ${uRs(c)}`,`🎁 عطیات: ${uRs(d)}`,`➕ *کل آمدن: ${uRs(c+d)}*`,'',`🧾 *کل اخراجات: ${uRs(e)}*`];
+  const ex=S.expenses.filter(x=>x.date.slice(0,4)==String(y));
+  CATS.filter(k=>k!=='Other').forEach(k=>{const v=sum(ex.filter(x=>x.cat===k),x=>x.amount);if(v)L.push(`    • ${CATU[k]||k}: ${uRs(v)}`)});
+  const og={};ex.filter(x=>x.cat==='Other').forEach(x=>{const k=x.other||'دیگر';og[k]=(og[k]||0)+(+x.amount)});Object.entries(og).forEach(([k,v])=>L.push(`    • ${k}: ${uRs(v)}`));
+  L.push('',`📈 سال کی بچت: ${uRs(c+d-e)}`,`💰 *موجودہ رقم (خزانہ): ${uRs(cashInHand())}*`,'','جزاک اللہ خیراً 🤲');
   window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
 
 /* ---------- Excel import ---------- */
