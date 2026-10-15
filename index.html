@@ -152,6 +152,51 @@ tfoot td{font-weight:800;background:var(--gold-soft)}
 .mini{background:none;border:0;color:var(--muted);font-size:13px;font-weight:700;padding:4px 6px}
 .legend{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 @media print{nav,.fab,.toolbar,.chips,.btn,.mini{display:none!important}header{background:none;color:#000}header .logo{box-shadow:none}.stat,.sum3 div{color:#000;background:none;border:1px solid #999}}
+
+/* Home */
+.hello{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 2px 12px}
+.hello .hi{font-weight:800;font-size:17px;white-space:nowrap}
+.hello .s{font-size:12.5px;color:var(--muted)}
+.hijri{background:var(--gold-soft);color:#9a6c0c;border:1px solid var(--gold);font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:20px;text-align:center;max-width:42%;line-height:1.3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hijri{color:var(--gold)}}
+.hero{display:flex;align-items:center;gap:16px;padding:18px;border-radius:24px;color:#fff;position:relative;overflow:hidden;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.09' stroke-width='1.2'%3E%3Crect x='17' y='17' width='22' height='22'/%3E%3Crect x='17' y='17' width='22' height='22' transform='rotate(45 28 28)'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(135deg,#0a5a3c,#0e7a52 50%,#18a571);box-shadow:0 12px 28px rgba(14,122,82,.35);margin-bottom:14px}
+.hero::before{content:"";position:absolute;right:-40px;bottom:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(247,227,161,.35),transparent 70%)}
+.ring{width:108px;height:108px;flex:none;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .trk{stroke:rgba(255,255,255,.18)}
+.ring .val{stroke:#f2cf6b;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
+.ring text{transform:rotate(90deg);transform-origin:50px 50px;fill:#fff}
+.ring .pc{font-size:22px;font-weight:800}.ring .pl{font-size:9.5px;opacity:.85}
+.hero .hk{font-size:13px;font-weight:700;color:#cdeedd}
+.hero .hv{font-size:27px;font-weight:800;line-height:1.15}
+.hero .hs{font-size:12.5px;color:#cdeedd}
+.hb{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.hb span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);border-radius:20px;padding:3px 9px;font-size:11.5px;font-weight:700}
+.hero.welcome{flex-direction:column;text-align:center;gap:6px}
+.hero.welcome img{width:86px;height:86px;border-radius:50%;border:3px solid #e5c26a;background:#fff}
+.hero.welcome h2{margin:6px 0 0;color:#fff}.hero.welcome p{margin:0 0 10px;color:#cdeedd}
+.hero.welcome .btns{width:100%}
+.btn.white{background:#fff;color:#0e7a52}
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.qa button{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;font-weight:800;box-shadow:var(--shadow)}
+.qa button:active{transform:scale(.96)}
+.qa i{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;color:#fff;position:relative}
+.qa i svg{width:24px;height:24px}
+.qa i b{position:absolute;top:-6px;right:-8px;background:#d23b56;color:#fff;font-style:normal;font-size:11px;min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;padding:0 5px;border:2px solid var(--card)}
+.q1{background:linear-gradient(140deg,#bd8a17,#e4b94a)}.q2{background:linear-gradient(140deg,#1f5fc9,#4a93f2)}.q3{background:linear-gradient(140deg,#1aa856,#25d366)}.q4{background:linear-gradient(140deg,#d23b56,#f2768a)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px}
+.chart .ct{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;color:var(--muted);gap:8px}
+.chart .ct b{font-size:15px;color:var(--text)}
+.chart svg{width:100%;height:auto;display:block}
+.cex{fill:var(--pri-soft)}.cin{fill:#0e7a52}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cin{fill:#2fc58a}}
+.cl{font-size:11px;fill:var(--muted);font-weight:700}.cv{font-size:10px;fill:var(--text);font-weight:800}
+.lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 8px;vertical-align:-1px}.lgi{background:#0e7a52}.lge{background:var(--pri-soft);border:1px solid var(--line)}
+.hadith{position:relative;text-align:center;padding:18px 18px 14px;border-radius:20px;margin-bottom:12px;background:linear-gradient(135deg,var(--gold-soft),var(--card));border:1.5px solid var(--gold)}
+.hadith .star{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#e7c25f,#bf8f1c);color:#fff;display:grid;place-items:center;font-size:14px}
+.hadith p{margin:4px 0 6px;font-weight:700;font-size:14.5px;line-height:1.55}
+.hadith span{font-size:11.5px;color:var(--muted);font-weight:700}
+.stat .k svg{display:none}
 </style>
 </head>
 <body>
@@ -240,25 +285,62 @@ function render(){
 }
 
 /* ---------- Home ---------- */
+function hijri(){try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}catch(_){return''}}
+function greet(){const h=new Date().getHours();return h<12?'Subah bakhair':h<17?'Good afternoon':'Shaam bakhair'}
+const IC={
+ recv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2.5"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5h.01M18 15.5h.01"/></svg>',
+ add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5 1.6 0 3 .5 4.1 1.4M18 13v7M14.5 16.5h7"/></svg>',
+ wa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.8z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.6-2-1-1 .9a4 4 0 0 1-2-2l.9-1-1-2z" stroke-width="1.6"/></svg>',
+ exp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h4"/></svg>'};
 function vHome(){
   const cm=curMonth();const act=S.members.filter(m=>activeIn(m,cm));
   const exp=sum(act,m=>m.fee);const col=sum(S.payments.filter(p=>p.date.slice(0,7)===cm),p=>p.amount);
   const paidCnt=act.filter(m=>mStatus(m,cm)==='paid').length;
   const pend=sum(S.members,m=>Math.max(0,summary(m).bal));
+  const owing=S.members.filter(m=>summary(m).bal>0).length;
   const cash=sum(S.payments,p=>p.amount)-sum(S.expenses,e=>e.amount);
+  const spent=sum(S.expenses.filter(e=>e.date.slice(0,7)===cm),e=>e.amount);
   const pct=exp?Math.min(100,Math.round(col/exp*100)):0;
-  if(!S.members.length)return `<div class="list"><div class="empty"><b>No members yet</b><br>Add the mohalla members first. You can add many at once by pasting their names.<br><br><button class="btn" onclick="go('members');memberForm()">Add member</button> <button class="btn ghost" onclick="importStart()">Import Excel</button> <button class="btn ghost" onclick="bulkForm()">Type names</button></div></div>`;
+  const hj=hijri();
+  const hello=`<div class="hello"><div><div class="hi">Assalam o Alaikum 🌙</div><div class="s">${greet()} · ${dL(today())}</div></div>${hj?`<span class="hijri">${esc(hj)}</span>`:''}</div>`;
+  if(!S.members.length)return hello+`<div class="hero welcome"><img src="${document.querySelector('header .logo').src}" alt=""><h2>Bismillah — let's begin</h2><p>Add the mohalla members to start recording monthly chanda.</p><div class="btns"><button class="btn gold" onclick="go('members');memberForm()">Add member</button><button class="btn white" onclick="importStart()">Import Excel</button></div><button class="mini" style="color:#fff;margin-top:8px" onclick="bulkForm()">or type names one by one</button></div>`+hadith();
+  const R=2*Math.PI*44,off=R*(1-pct/100);
   const top=S.members.map(m=>({m,s:summary(m)})).filter(x=>x.s.mDue>=2).sort((a,b)=>b.s.bal-a.s.bal).slice(0,10);
-  const rec=[...S.payments].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,8);
-  return `<div class="stats">
-   <div class="stat wide"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/></svg>Collected in ${mL(cm)}</div><div class="v">${rs(col)} <span class="note">of ${rs(exp)}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="note" style="margin-top:6px">${pct}% collected · ${paidCnt} of ${act.length} members fully paid</div></div>
-   <div class="stat c-rose"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>Total pending</div><div class="v">${rs(pend)}</div></div>
-   <div class="stat c-gold"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/></svg>Cash in hand</div><div class="v">${rs(cash)}</div></div>
-   <div class="stat c-blue"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/></svg>Members</div><div class="v">${S.members.length}</div></div>
-   <div class="stat c-purple"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Paid this month</div><div class="v">${paidCnt}</div></div>
+  const rec=[...S.payments].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,6);
+  return hello+`
+  <div class="hero">
+   <svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="trk"/><circle cx="50" cy="50" r="44" class="val" stroke-dasharray="${R}" stroke-dashoffset="${off}"/><text x="50" y="49" text-anchor="middle" class="pc">${pct}%</text><text x="50" y="64" text-anchor="middle" class="pl">collected</text></svg>
+   <div class="grow"><div class="hk">${mL(cm)} chanda</div><div class="hv">${rs(col)}</div><div class="hs">of ${rs(exp)} expected</div><div class="hb"><span>✓ ${paidCnt} paid</span><span>⏳ ${act.length-paidCnt} remaining</span></div></div>
   </div>
+  <div class="qa">
+   <button onclick="payForm()"><i class="q1">${IC.recv}</i>Receive</button>
+   <button onclick="go('members');memberForm()"><i class="q2">${IC.add}</i>Add member</button>
+   <button onclick="remindAll()"><i class="q3">${IC.wa}${owing?`<b>${owing}</b>`:''}</i>Reminders</button>
+   <button onclick="go('expenses');expForm()"><i class="q4">${IC.exp}</i>Kharcha</button>
+  </div>
+  <div class="stats">
+   <div class="stat c-rose"><div class="k">Total pending</div><div class="v">${rs(pend)}</div><div class="note">${owing} ${owing==1?'member owes':'members owe'}</div></div>
+   <div class="stat c-gold"><div class="k">Cash in hand</div><div class="v">${rs(cash)}</div><div class="note">after all kharcha</div></div>
+   <div class="stat c-blue"><div class="k">Members</div><div class="v">${act.length}</div><div class="note">active this month</div></div>
+   <div class="stat c-purple"><div class="k">Spent in ${MN[+cm.slice(5)-1]}</div><div class="v">${rs(spent)}</div><div class="note">masjid kharcha</div></div>
+  </div>
+  ${chart6()}
+  ${hadith()}
   <details class="box" open><summary>Most pending (2+ months)<span class="pill due">${top.length}</span></summary><div class="boxin">${top.length?top.map(x=>`<div class="row" onclick="memberSheet('${x.m.id}')">${av(x.m.name)}<div class="grow"><div class="t">${esc(x.m.name)}</div><div class="s">${x.s.mDue} months · ${esc(x.m.house||'')}</div></div><div class="amt red">${rs(x.s.bal)}</div></div>`).join(''):'<div class="empty">Alhamdulillah, nobody owes 2 or more months.</div>'}</div></details>
   <details class="box" open><summary>Recent payments</summary><div class="boxin">${rec.length?rec.map(payRow).join(''):'<div class="empty">No payments recorded yet.</div>'}</div></details>`;
+}
+function chart6(){
+  const ms=[];for(let i=5;i>=0;i--)ms.push(addM(curMonth(),-i));
+  const D=ms.map(mo=>({mo,ex:sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee),in:sum(S.payments.filter(p=>p.date.slice(0,7)===mo),p=>p.amount)}));
+  const mx=Math.max(1,...D.map(d=>Math.max(d.ex,d.in)));const W=320,H=130,bw=30,gap=(W-6*bw)/6;
+  const bars=D.map((d,i)=>{const x=gap/2+i*(bw+gap),he=d.ex/mx*100,hi=d.in/mx*100;
+    return `<rect x="${x}" y="${110-he}" width="${bw}" height="${he}" rx="7" class="cex"/><rect x="${x+5}" y="${110-hi}" width="${bw-10}" height="${hi}" rx="5" class="cin"/><text x="${x+bw/2}" y="125" text-anchor="middle" class="cl">${MN[+d.mo.slice(5)-1]}</text>${d.in?`<text x="${x+bw/2}" y="${Math.max(10,104-hi)}" text-anchor="middle" class="cv">${d.in>=1000?(d.in/1000).toFixed(d.in%1000?1:0)+'k':d.in}</text>`:''}`}).join('');
+  return `<div class="card chart"><div class="ct"><b>Last 6 months</b><span><i class="lg lgi"></i>Received <i class="lg lge"></i>Expected</span></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Collections for the last 6 months">${bars}</svg></div>`;
+}
+function hadith(){return `<div class="hadith"><div class="star">✦</div><p>“Whoever builds a masjid for the sake of Allah, Allah will build for him a house like it in Paradise.”</p><span>Sahih al-Bukhari & Sahih Muslim</span></div>`}
+function remindAll(){
+  const L=S.members.map(m=>({m,s:summary(m)})).filter(x=>x.s.bal>0).sort((a,b)=>b.s.bal-a.s.bal);
+  openSheet('Send reminders',L.length?`<p class="note" style="margin-top:-6px">Tap WhatsApp next to each name to send their pending amount.</p><div class="list">${L.map(({m,s})=>`<div class="row">${av(m.name)}<div class="grow"><div class="t">${esc(m.name)}</div><div class="s">${s.mDue} month${s.mDue>1?'s':''}${m.phone?'':' · no number'}</div></div><div class="amt red">${rs(s.bal)}</div><button class="btn green sm" onclick="remind('${m.id}')">WhatsApp</button></div>`).join('')}</div>`:'<div class="empty">Alhamdulillah, nobody has pending chanda.</div>');
 }
 function payRow(p){const m=byId(p.memberId);return `<div class="row" onclick="memberSheet('${p.memberId}')">${av(m?m.name:'?')}<div class="grow"><div class="t">${esc(m?m.name:'Deleted member')}</div><div class="s">${dL(p.date)}${p.by?' · by '+esc(p.by):''}${p.note?' · '+esc(p.note):''}</div></div><div class="amt green">${rs(p.amount)}</div></div>`}
 
