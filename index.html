@@ -232,6 +232,51 @@ details.box.rep>summary::before{display:none}
 .ptitle{display:none}
 tr.fut td{color:var(--muted);opacity:.6}
 @media print{body[data-print] .wrap>*{display:none!important}body[data-print] .wrap>details.psel{display:block!important;box-shadow:none;border:0}body[data-print] .psel .btns,body[data-print] .psel .list{display:none!important}body[data-print] .ptitle{display:block;font-weight:800;font-size:16px;margin-bottom:10px}body[data-print] nav,body[data-print] .fab,body[data-print] #instBar{display:none!important}}
+
+.replist{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+details.rep2{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+details.rep2>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}
+details.rep2>summary::-webkit-details-marker{display:none}
+details.rep2 .ri{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;flex:none}
+details.rep2 .ri svg{width:22px;height:22px}
+details.rep2 summary .grow{flex:1;min-width:0}
+details.rep2 summary b{display:block;font-size:15px}
+details.rep2 summary span{font-size:12.5px;color:var(--muted);font-weight:600}
+.chev{width:32px;height:32px;border-radius:50%;background:var(--pri-soft);flex:none;position:relative;transition:transform .25s}
+.chev::after{content:"";position:absolute;left:11px;top:9px;width:8px;height:8px;border-right:2.5px solid var(--pri);border-bottom:2.5px solid var(--pri);transform:rotate(45deg)}
+details.rep2[open] .chev{transform:rotate(180deg);background:var(--pri);}
+details.rep2[open] .chev::after{border-color:#fff}
+details.rep2[open]>summary{border-bottom:1px solid var(--line)}
+.repin{padding:14px}
+.lh{display:flex;align-items:center;gap:12px;padding-bottom:10px;border-bottom:2px solid var(--gold)}
+.lh img{width:52px;height:52px;border-radius:50%;border:2px solid var(--gold);background:#fff;flex:none}
+.lhn b{display:block;font-size:14px;letter-spacing:.8px;text-transform:uppercase;color:var(--pri)}
+.lhn span{display:block;font-size:12px;color:var(--muted)}
+.lhn .ur{font-family:"Noto Nastaliq Urdu","Jameel Noori Nastaleeq",serif;font-size:13px;line-height:1.8;color:var(--text)}
+.lht{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
+.lht b{font-size:16px}.lht span{font-size:12px;color:var(--muted);font-weight:700;background:var(--gold-soft);padding:3px 9px;border-radius:20px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.kpis div{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)}
+.kpis small{display:block;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.kpis b{font-size:16px}
+.repin h4{margin:14px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+table.rt{font-size:12.5px;border:1px solid var(--line);border-radius:12px;overflow:hidden;border-collapse:separate;border-spacing:0}
+table.rt th{background:var(--pri);color:#fff;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px}
+table.rt td{border-bottom:1px solid var(--line)}
+table.rt tfoot td{background:var(--gold-soft);border-top:2px solid var(--gold);border-bottom:0}
+table.rt td.neg{color:var(--bad)}
+.tsub{font-size:11px;color:var(--muted)}
+.mbar{display:block;height:4px;background:var(--na);border-radius:4px;margin-top:3px;width:56px;overflow:hidden}
+.mbar i{display:block;height:100%;border-radius:4px}
+.rfoot{font-size:11px;color:var(--muted);text-align:center;margin-top:10px}
+.sig{display:none}
+.rbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.rbtns .btn{flex:1;min-width:90px}
+@media print{body[data-print] header{display:none!important}body[data-print] .wrap>*{display:none!important}body[data-print] .wrap>.replist,body[data-print] .wrap>div:has(.psel){display:block!important}body[data-print] .replist>*:not(.psel){display:none!important}
+ body[data-print] details.psel{border:0;box-shadow:none}body[data-print] details.psel>summary,body[data-print] .rbtns{display:none!important}
+ body[data-print] table.rt th{background:#0e7a52!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ body[data-print] .sig{display:flex;justify-content:space-between;gap:20px;margin-top:50px}body[data-print] .sig div{flex:1;border-top:1px solid #333;padding-top:6px;text-align:center;font-size:12px}
+ body[data-print] .mbar{display:none}body[data-print] .wrap{max-width:none}}
 </style>
 </head>
 <body>
@@ -442,41 +487,39 @@ function vExpenses(){
 
 /* ---------- Reports & settings ---------- */
 function vMore(){
-  const at=sum(S.assets,a=>a.value);
+  const s=S.settings;const at=sum(S.assets,a=>a.value);
   const y=V.ry;const ms=months(y+'-01',y+'-12');const cm=curMonth();
   const C=ms.map(mo=>({mo,ex:sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee),in:chandaIn(mo)}));
   const Y=S.donations.filter(d=>d.date.slice(0,4)==String(y));
   const D=ms.map(mo=>({mo,n:Y.filter(d=>d.date.slice(0,7)===mo).length,v:donIn(mo)}));
   const I=ms.map(mo=>({mo,c:chandaIn(mo),d:donIn(mo),e:spentIn(mo)}));
-  const mn=mo=>MN[+mo.slice(5)-1];const s=S.settings;
+  const mn=mo=>MN[+mo.slice(5)-1];const per='January – December '+y;
+  const cEx=sum(C.filter(r=>r.mo<=cm),r=>r.ex),cIn=sum(C,r=>r.in),pend=sum(S.members,m=>Math.max(0,summary(m).bal));
+  const pct=cEx?Math.round(cIn/cEx*100):0;
+  const dTot=sum(Y,d=>d.amount);const tI=sum(I,r=>r.c+r.d),tE=sum(I,r=>r.e);
+  const grp={};Y.forEach(d=>{const k=donType(d);grp[k]=grp[k]||{n:0,v:0};grp[k].n++;grp[k].v+=+d.amount});
   const top=[...Y].sort((a,b)=>b.amount-a.amount).slice(0,5);
+  const bar=(v,mx,c)=>`<span class="mbar"><i style="width:${mx?Math.min(100,v/mx*100):0}%;background:${c}"></i></span>`;
+  const mxC=Math.max(1,...C.map(r=>Math.max(r.ex,r.in))),mxD=Math.max(1,...D.map(r=>r.v));
+  const chanda=letterhead('Monthly Chanda Report',per)+kpis([['Expected (to date)',rs(cEx)],['Received',rs(cIn),'var(--ok)'],['Collection',pct+'%'],['Pending now',rs(pend),'var(--bad)']])+
+   `<div class="scroll"><table class="rt"><thead><tr><th>Month</th><th>Expected</th><th>Received</th><th>%</th></tr></thead><tbody>${C.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}${bar(r.in,mxC,'#16a974')}</td><td>${rs(r.ex)}</td><td>${rs(r.in)}</td><td>${r.ex?Math.round(r.in/r.ex*100)+'%':'—'}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(C,r=>r.ex))}</td><td>${rs(cIn)}</td><td>${sum(C,r=>r.ex)?Math.round(cIn/sum(C,r=>r.ex)*100)+'%':'—'}</td></tr></tfoot></table></div>`+
+   repFoot()+repBtns(`<button class="btn green sm" onclick="shareChandaYear()">Share in Urdu</button>`);
+  const don=letterhead('Donations Report',per)+(Y.length?kpis([['Total donations',rs(dTot),'#7c3aed'],['Count',Y.length],['Donors',new Set(Y.map(d=>d.anon?d.id:d.name)).size],['Average',rs(dTot/Y.length)]])+
+   `<h4>By purpose</h4><div class="scroll"><table class="rt"><thead><tr><th>Purpose</th><th>Count</th><th>Amount</th><th>Share</th></tr></thead><tbody>${Object.entries(grp).sort((a,b)=>b[1].v-a[1].v).map(([k,x])=>`<tr><td>${esc(k)}</td><td>${x.n}</td><td>${rs(x.v)}</td><td>${Math.round(x.v/dTot*100)}%</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${Y.length}</td><td>${rs(dTot)}</td><td>100%</td></tr></tfoot></table></div>
+   <h4>By month</h4><div class="scroll"><table class="rt"><thead><tr><th>Month</th><th>Count</th><th>Amount</th></tr></thead><tbody>${D.filter(r=>r.n).map(r=>`<tr><td>${mn(r.mo)}${bar(r.v,mxD,'#9a6cf0')}</td><td>${r.n}</td><td>${rs(r.v)}</td></tr>`).join('')}</tbody></table></div>
+   <h4>Top donors</h4><div class="scroll"><table class="rt"><thead><tr><th>Donor</th><th>Date</th><th>Purpose</th><th>Amount</th></tr></thead><tbody>${top.map(d=>`<tr><td>${esc(donName(d))}</td><td>${dL(d.date)}</td><td>${esc(donType(d))}</td><td>${rs(d.amount)}</td></tr>`).join('')}</tbody></table></div>`+
+   repFoot()+repBtns(`<button class="btn green sm" onclick="shareDonYear(false)">Share totals</button><button class="btn green sm" onclick="shareDonYear(true)">With names</button>`,`<button class="btn ghost sm" onclick="go('donations')">All ›</button>`)
+   :`<div class="empty">No donations recorded in ${y}.<br><br><button class="btn sm" onclick="donForm()">Add donation</button></div>`);
+  const inc=letterhead('Income & Expenditure Statement',per)+kpis([['Total income',rs(tI),'var(--ok)'],['Total kharcha',rs(tE),'var(--bad)'],['Net saving',rs(tI-tE)],['Cash in hand',rs(cashInHand()),'#9a6c0c']])+
+   `<div class="scroll"><table class="rt"><thead><tr><th>Month</th><th>Chanda</th><th>Donations</th><th>Kharcha</th><th>Net</th></tr></thead><tbody>${I.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}</td><td>${rs(r.c)}</td><td>${rs(r.d)}</td><td>${rs(r.e)}</td><td class="${r.c+r.d-r.e<0?'neg':''}">${rs(r.c+r.d-r.e)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(I,r=>r.c))}</td><td>${rs(sum(I,r=>r.d))}</td><td>${rs(tE)}</td><td>${rs(tI-tE)}</td></tr></tfoot></table></div>`+
+   repFoot()+repBtns(`<button class="btn green sm" onclick="shareIncomeYear()">Share in Urdu</button><button class="btn green sm" onclick="shareSummary()">This month</button>`);
   return `<div class="monthbar" style="margin-top:8px"><button onclick="V.ry--;render()" aria-label="Previous year">‹</button><b>Reports ${y}</b><button onclick="V.ry++;render()" aria-label="Next year">›</button></div>
-  <details class="box rep" open><summary><span class="rdot" style="background:#0e7a52"></span>Monthly chanda report</summary><div class="boxin">
-   <div class="ptitle">${esc(s.name)} — Monthly chanda report ${y}</div>
-   <div class="scroll"><table><thead><tr><th>Month</th><th>Expected</th><th>Received</th><th>%</th></tr></thead><tbody>${C.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}</td><td>${rs(r.ex)}</td><td>${rs(r.in)}</td><td>${r.ex?Math.round(r.in/r.ex*100)+'%':'—'}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(C,r=>r.ex))}</td><td>${rs(sum(C,r=>r.in))}</td><td>${sum(C,r=>r.ex)?Math.round(sum(C,r=>r.in)/sum(C,r=>r.ex)*100)+'%':'—'}</td></tr></tfoot></table></div>
-   <p class="note">Total pending from members now: <b style="color:var(--bad)">${rs(sum(S.members,m=>Math.max(0,summary(m).bal)))}</b></p>
-   <div class="btns"><button class="btn green" onclick="shareChandaYear()">Share in Urdu</button><button class="btn gold" onclick="printSec(this)">Print</button></div>
-  </div></details>
-  <details class="box rep" open><summary><span class="rdot" style="background:#7c3aed"></span>Donations report</summary><div class="boxin">
-   <div class="ptitle">${esc(s.name)} — Donations report ${y}</div>
-   ${Y.length?`<div class="sum3"><div style="background:linear-gradient(140deg,#6a3fc8,#9a6cf0)"><small>Total</small><b>${rs(sum(Y,d=>d.amount))}</b></div><div style="background:linear-gradient(140deg,#1f5fc9,#4a93f2)"><small>Donations</small><b>${Y.length}</b></div><div><small>Donors</small><b>${new Set(Y.map(d=>d.anon?d.id:d.name)).size}</b></div></div>
-   <h2 style="font-size:15px;margin-top:4px">By purpose</h2>
-   <div class="scroll"><table><thead><tr><th>Purpose</th><th>Count</th><th>Amount</th></tr></thead><tbody>${(()=>{const g={};Y.forEach(d=>{const k=donType(d);g[k]=g[k]||{n:0,v:0};g[k].n++;g[k].v+=+d.amount});return Object.entries(g).sort((a,b)=>b[1].v-a[1].v).map(([k,x])=>`<tr><td>${esc(k)}</td><td>${x.n}</td><td>${rs(x.v)}</td></tr>`).join('')})()}</tbody></table></div>
-   <h2 style="font-size:15px">By month</h2>
-   <div class="scroll"><table><thead><tr><th>Month</th><th>Count</th><th>Amount</th></tr></thead><tbody>${D.filter(r=>r.n).map(r=>`<tr><td>${mn(r.mo)}</td><td>${r.n}</td><td>${rs(r.v)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${Y.length}</td><td>${rs(sum(Y,d=>d.amount))}</td></tr></tfoot></table></div>
-   <h2 style="font-size:15px">Top donors</h2>
-   <div class="list">${top.map(d=>`<div class="row" onclick="donForm('${d.id}')">${av(d.anon?'?':d.name)}<div class="grow"><div class="t">${esc(donName(d))}</div><div class="s">${dL(d.date)} · ${esc(donType(d))}</div></div><div class="amt green">${rs(d.amount)}</div></div>`).join('')}</div>
-   <div class="btns" style="margin-top:12px"><button class="btn green" onclick="shareDonYear(false)">Share totals</button><button class="btn green" onclick="shareDonYear(true)">Share with names</button></div>
-   <div class="btns" style="margin-top:8px"><button class="btn gold" onclick="printSec(this)">Print</button><button class="btn ghost" onclick="go('donations')">All donations ›</button></div>`:`<div class="empty">No donations recorded in ${y}.<br><br><button class="btn" style="background:linear-gradient(135deg,#6a3fc8,#9a6cf0)" onclick="donForm()">Add donation</button></div>`}
-  </div></details>
-  <details class="box rep"><summary><span class="rdot" style="background:#bd8a17"></span>Income & kharcha summary</summary><div class="boxin">
-   <div class="ptitle">${esc(s.name)} — Income & kharcha ${y}</div>
-   <div class="scroll"><table><thead><tr><th>Month</th><th>Chanda</th><th>Donations</th><th>Kharcha</th><th>Saved</th></tr></thead><tbody>${I.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}</td><td>${rs(r.c)}</td><td>${rs(r.d)}</td><td>${rs(r.e)}</td><td>${rs(r.c+r.d-r.e)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(I,r=>r.c))}</td><td>${rs(sum(I,r=>r.d))}</td><td>${rs(sum(I,r=>r.e))}</td><td>${rs(sum(I,r=>r.c+r.d-r.e))}</td></tr></tfoot></table></div>
-   <p class="note">Cash in hand now (all years): <b>${rs(cashInHand())}</b></p>
-   <div class="btns"><button class="btn green" onclick="shareIncomeYear()">Share in Urdu</button><button class="btn gold" onclick="printSec(this)">Print</button></div>
-   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="shareSummary()">This month's report (Urdu)</button></div>
-  </div></details>
-  <div class="hero" style="cursor:pointer" onclick="go('assets')"><i style="width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:none;background:linear-gradient(140deg,#e7c25f,#bf8f1c)">${IC.box}</i><div class="grow"><div class="hk">Masjid assets</div><div class="hv" style="font-size:22px">${rs(at)}</div><div class="hs">${S.assets.length} items · tap to view report</div></div><b style="font-size:22px">›</b></div>
+  <div class="replist">
+  ${repBox('chanda','linear-gradient(140deg,#0e7a52,#16a974)',IC.recv,'Monthly chanda report',`${rs(cIn)} received · ${pct}% collected`,chanda)}
+  ${repBox('don','linear-gradient(140deg,#6a3fc8,#9a6cf0)',IC.gift,'Donations report',`${rs(dTot)} · ${Y.length} donation${Y.length==1?'':'s'}`,don)}
+  ${repBox('inc','linear-gradient(140deg,#bd8a17,#e4b94a)',IC.chart,'Income & expenditure',`Net ${rs(tI-tE)} · cash ${rs(cashInHand())}`,inc)}
+  ${repBox('assets','linear-gradient(140deg,#1f5fc9,#4a93f2)',IC.box,'Assets report',`${rs(at)} · ${S.assets.length} item${S.assets.length==1?'':'s'}`,assetReport())}
+  </div>
   <details class="box"><summary>Download & backup</summary><div class="boxin">
    <p class="note" style="margin-top:0">All data stays on this phone. Download a backup every month and keep it safe (WhatsApp it to yourself or save to Google Drive).</p>
    <div class="btns"><button class="btn" onclick="backup()">Download backup</button><button class="btn ghost" onclick="fileIn.click()">Restore backup</button></div>
@@ -491,7 +534,7 @@ function vMore(){
    <p class="note">Changing the default amount only applies to members you add later.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 7 · Donations & separate reports</p>
+  <p class="note" style="text-align:center">App version 8 · Professional reports</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -746,15 +789,16 @@ function vAssets(){
   ${A.length?`<div class="acats">${byCat.map(({c,L})=>`<button class="acat ${V.af===c[0]?'on':''}" style="--c:${c[3]}" onclick="V.af=V.af===this.dataset.k?'all':this.dataset.k;render()" data-k="${esc(c[0])}"><b>${esc(c[1])}</b><span>${rs(sum(L,a=>a.value))}</span><small>${L.length} item${L.length>1?'s':''}</small></button>`).join('')}</div>
   <div class="chips"><button class="chip ${V.af==='all'?'on':''}" onclick="V.af='all';render()">All (${A.length})</button>${byCat.map(({c,L})=>`<button class="chip ${V.af===c[0]?'on':''}" data-k="${esc(c[0])}" onclick="V.af=this.dataset.k;render()">${esc(c[1])} (${L.length})</button>`).join('')}</div>`:''}
   <div class="list">${shown.length?shown.map(a=>{const c=ACAT(a.cat),k=ACON(a.cond);return `<div class="row" onclick="assetForm('${a.id}')"><span class="av ex" style="background:${c[3]}">${esc((a.name||'?').trim()[0].toUpperCase())}</span><div class="grow"><div class="t">${esc(a.name)}${+a.qty>1?` <span class="s">× ${+a.qty}</span>`:''}</div><div class="s">${esc(a.cat==='other'&&a.catName?a.catName:c[1])}${a.place?' · '+esc(a.place):''}${a.src==='donated'?' · donated'+(a.donor?' by '+esc(a.donor):''):''}</div></div><div style="text-align:right"><div class="amt">${rs(a.value)}</div><span class="pill ${k[3]}" style="font-size:10.5px;padding:2px 7px">${k[1]}</span></div></div>`}).join(''):`<div class="empty">${A.length?'No assets in this category.':'<b>No assets yet</b><br>Add the masjid\'s things — carpets, fans, sound system, water cooler, books — with a rough value.<br><br><button class="btn" onclick="assetForm()">Add first asset</button>'}</div>`}</div>
-  ${A.length?`<details class="box" style="margin-top:12px" open><summary>Assets report</summary><div class="boxin">
-   <div class="scroll"><table><thead><tr><th>Category</th><th>Items</th><th>Qty</th><th>Value</th></tr></thead><tbody>${byCat.map(({c,L})=>`<tr><td>${esc(c[1])}</td><td>${L.length}</td><td>${sum(L,a=>a.qty||1)}</td><td>${rs(sum(L,a=>a.value))}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${A.length}</td><td>${sum(A,a=>a.qty||1)}</td><td>${rs(tot)}</td></tr></tfoot></table></div>
-   <h2 style="font-size:15px">Condition</h2>
-   <div class="sum3">${cond.map(({c,n,v})=>`<div style="background:linear-gradient(140deg,${G[c[0]]})"><small>${c[1]}</small><b>${n} item${n==1?'':'s'}</b><small>${rs(v)}</small></div>`).join('')}</div>
-   <p class="note" style="margin:0 0 12px">Donated: ${rs(don)} · Bought by masjid: ${rs(tot-don)}</p>
-   <div class="btns"><button class="btn green" onclick="shareAssets()">Share in Urdu</button><button class="btn gold" onclick="window.print()">Print</button></div>
-   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="csvAssets()">Download Excel</button></div>
-  </div></details>`:''}`;
+  ${A.length?`<div style="margin-top:12px">${repBox('assets2','linear-gradient(140deg,#1f5fc9,#4a93f2)',IC.box,'Assets report',`${rs(tot)} · ${A.length} items`,assetReport())}</div>`:''}`;
 }
+function assetReport(){const A=S.assets;const tot=sum(A,a=>a.value);
+  if(!A.length)return letterhead('Assets Register','As on '+dL(today()))+`<div class="empty">No assets recorded yet.<br><br><button class="btn sm" onclick="go('assets');assetForm()">Add asset</button></div>`;
+  const G=aGroups(A);const don=sum(A.filter(a=>a.src==='donated'),a=>a.value);
+  const cnt=k=>A.filter(a=>(a.cond||'good')===k);
+  return letterhead('Assets Register','As on '+dL(today()))+kpis([['Total value',rs(tot),'#1f5fc9'],['Items',A.length],['Donated',rs(don)],['Need repair',cnt('repair').length+cnt('bad').length,'var(--warn)']])+
+  `<h4>Summary by category</h4><div class="scroll"><table class="rt"><thead><tr><th>Category</th><th>Items</th><th>Qty</th><th>Value</th></tr></thead><tbody>${G.map(g=>`<tr><td>${esc(g.en)}</td><td>${g.L.length}</td><td>${sum(g.L,a=>a.qty||1)}</td><td>${rs(sum(g.L,a=>a.value))}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${A.length}</td><td>${sum(A,a=>a.qty||1)}</td><td>${rs(tot)}</td></tr></tfoot></table></div>
+  <h4>Item register</h4><div class="scroll"><table class="rt"><thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Condition</th><th>Value</th></tr></thead><tbody>${G.flatMap(g=>g.L).map((a,i)=>`<tr><td>${i+1}</td><td>${esc(a.name)}<div class="tsub">${esc(a.cat==='other'&&a.catName?a.catName:ACAT(a.cat)[1])}${a.src==='donated'?' · donated':''}</div></td><td>${+a.qty||1}</td><td><span class="pill ${ACON(a.cond)[3]}" style="font-size:10.5px;padding:2px 7px">${ACON(a.cond)[1]}</span></td><td>${rs(a.value)}</td></tr>`).join('')}</tbody></table></div>
+  <p class="note">All values are approximate.</p>`+repFoot()+repBtns(`<button class="btn green sm" onclick="shareAssets()">Share in Urdu</button>`,`<button class="btn ghost sm" onclick="csvAssets()">Excel</button>`)}
 function assetForm(id){
   const a=id?S.assets.find(x=>x.id===id):{name:'',cat:'carpet',qty:1,value:'',cond:'good',src:'bought',donor:'',date:today(),place:'',note:''};
   openSheet(id?'Edit asset':'Add asset',`
@@ -791,6 +835,22 @@ function shareAssets(){const st=S.settings,A=S.assets,tot=sum(A,a=>a.value);
   if(rep)L.push(`🔧 مرمت طلب / خراب اشیاء: ${rep}`);
   L.push('','نوٹ: تمام رقوم تخمینی ہیں۔','','جزاک اللہ خیراً 🤲');
   window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
+
+
+/* ---------- Professional report frame ---------- */
+V.rep=null;
+function repBox(id,col,icon,title,sub,body){
+  return `<details class="rep2" data-rep="${id}" ${V.rep===id?'open':''} ontoggle="repToggle(this)">
+   <summary><i class="ri" style="background:${col}">${icon}</i><div class="grow"><b>${title}</b><span>${sub}</span></div><span class="chev" aria-hidden="true"></span></summary>
+   <div class="repin">${body}</div></details>`}
+function repToggle(el){if(el.open){V.rep=el.dataset.rep;document.querySelectorAll('details.rep2[open]').forEach(d=>{if(d!==el)d.open=false})}else if(V.rep===el.dataset.rep)V.rep=null}
+function letterhead(title,period){const st=S.settings;const logo=document.querySelector('header .logo');
+  return `<div class="lh">${logo?`<img src="${logo.src}" alt="">`:''}<div class="lhn"><b>${esc(st.name)}</b><span class="ur">${esc(st.nameUr||'')}</span><span>${esc(st.place)}</span></div></div>
+  <div class="lht"><b>${title}</b><span>${period}</span></div>`}
+function kpis(L){return `<div class="kpis">${L.map(([k,v,c])=>`<div><small>${k}</small><b${c?` style="color:${c}"`:''}>${v}</b></div>`).join('')}</div>`}
+function repFoot(){return `<div class="rfoot">Generated on ${dL(today())} · ${esc(S.settings.name)}</div>
+  <div class="sig"><div>Prepared by</div><div>Checked by</div><div>Imam / Mutawalli</div></div>`}
+function repBtns(share,extra){return `<div class="rbtns">${share}<button class="btn gold sm" onclick="printSec(this)">🖨 Print</button>${extra||''}</div>`}
 
 /* ---------- Donations (عطیات) ---------- */
 const DTYPES=[['general','General','عام عطیہ','#0e7a52'],['construction','Construction','تعمیرات مسجد','#bd8a17'],['ramadan','Ramadan & Iftar','رمضان و افطاری','#7c3aed'],['juma','Juma box','جمعہ کا چندہ','#1f5fc9'],['quran','Quran & books','قرآن مجید و کتب','#0b8285'],['utility','Bills & utilities','بلز','#c2410c'],['other','Other','دیگر','#5d7268']];
@@ -864,7 +924,7 @@ const chandaIn=mo=>sum(S.payments.filter(p=>p.date.slice(0,7)===mo),p=>p.amount)
 const donIn=mo=>sum(S.donations.filter(d=>d.date.slice(0,7)===mo),d=>d.amount);
 const spentIn=mo=>sum(S.expenses.filter(e=>e.date.slice(0,7)===mo),e=>e.amount);
 const cashInHand=()=>sum(S.payments,p=>p.amount)+sum(S.donations,d=>d.amount)-sum(S.expenses,e=>e.amount);
-function printSec(btn){const box=btn.closest('details');box.open=true;box.classList.add('psel');document.body.dataset.print='1';window.print()}
+function printSec(btn){const box=btn.closest('details.rep2')||btn.closest('details');box.open=true;box.classList.add('psel');document.body.dataset.print='1';window.print()}
 window.addEventListener('afterprint',()=>{delete document.body.dataset.print;document.querySelectorAll('.psel').forEach(x=>x.classList.remove('psel'))});
 function shareChandaYear(){const y=V.ry,st=S.settings;const ms=months(y+'-01',y+'-12').filter(mo=>mo<=curMonth());
   const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*ماہانہ چندہ کی سالانہ رپورٹ — ${y}* 📋`,''];
