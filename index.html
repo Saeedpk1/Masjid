@@ -197,6 +197,12 @@ tfoot td{font-weight:800;background:var(--gold-soft)}
 .hadith p{margin:4px 0 6px;font-weight:700;font-size:14.5px;line-height:1.55}
 .hadith span{font-size:11.5px;color:var(--muted);font-weight:700}
 .stat .k svg{display:none}
+.acats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.acat{text-align:left;border:0;border-radius:16px;padding:11px 12px;color:#fff;background:var(--c);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1px;position:relative;overflow:hidden}
+.acat::after{content:"";position:absolute;right:-16px;top:-16px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.15)}
+.acat b{font-size:12.5px;opacity:.95}.acat span{font-size:17px;font-weight:800}.acat small{font-size:11.5px;opacity:.85}
+.acat.on{outline:3px solid var(--gold);outline-offset:2px}
+.hero i svg{width:26px;height:26px;color:#fff}
 </style>
 </head>
 <body>
@@ -228,9 +234,9 @@ tfoot td{font-weight:800;background:var(--gold-soft)}
 <script>
 /* ---------- Data ---------- */
 const KEY='masjid_kbw_chanda_v1';
-const DEF={settings:{name:'Masjid Khalid bin Waleed',nameUr:'مسجد خالد بن ولید',place:'Parrai, Swat',fee:500,collectors:''},members:[],payments:[],expenses:[]};
+const DEF={settings:{name:'Masjid Khalid bin Waleed',nameUr:'مسجد خالد بن ولید',place:'Parrai, Swat',fee:500,collectors:''},members:[],payments:[],expenses:[],assets:[]};
 let S=load();
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.members){d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];return d}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.members){d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];d.assets=d.assets||[];return d}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Could not save on this device. Download a backup.')}}
 
 /* ---------- Helpers ---------- */
@@ -276,10 +282,10 @@ function go(t){V.tab=t;render();window.scrollTo(0,0)}
 function render(){
   const s=S.settings;
   hUr.textContent=s.nameUr;hName.textContent=s.name;hPlace.textContent=s.place+' · Monthly Chanda Record';
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===V.tab));
-  main.innerHTML=({home:vHome,members:vMembers,collect:vCollect,expenses:vExpenses,more:vMore})[V.tab]();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(V.tab==='assets'?'more':V.tab)));
+  main.innerHTML=({home:vHome,members:vMembers,collect:vCollect,expenses:vExpenses,more:vMore,assets:vAssets})[V.tab]();
   const fab=document.getElementById('fab');
-  const F={members:['+ Add member',()=>memberForm()],collect:['+ Receive',()=>payForm()],expenses:['+ Add kharcha',()=>expForm()]}[V.tab];
+  const F={members:['+ Add member',()=>memberForm()],collect:['+ Receive',()=>payForm()],expenses:['+ Add kharcha',()=>expForm()],assets:['+ Add asset',()=>assetForm()]}[V.tab];
   if(F){fab.style.display='block';fab.textContent=F[0];fab.onclick=F[1]}else fab.style.display='none';
   if(V.tab==='members')drawMembers();
 }
@@ -288,6 +294,7 @@ function render(){
 function hijri(){try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}catch(_){return''}}
 function greet(){const h=new Date().getHours();return h<12?'Subah bakhair':h<17?'Good afternoon':'Shaam bakhair'}
 const IC={
+ box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/></svg>',
  recv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2.5"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5h.01M18 15.5h.01"/></svg>',
  add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5 1.6 0 3 .5 4.1 1.4M18 13v7M14.5 16.5h7"/></svg>',
  wa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.8z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.6-2-1-1 .9a4 4 0 0 1-2-2l.9-1-1-2z" stroke-width="1.6"/></svg>',
@@ -316,7 +323,7 @@ function vHome(){
    <button onclick="payForm()"><i class="q1">${IC.recv}</i>Receive</button>
    <button onclick="go('members');memberForm()"><i class="q2">${IC.add}</i>Add member</button>
    <button onclick="remindAll()"><i class="q3">${IC.wa}${owing?`<b>${owing}</b>`:''}</i>Reminders</button>
-   <button onclick="go('expenses');expForm()"><i class="q4">${IC.exp}</i>Kharcha</button>
+   <button onclick="go('assets')"><i class="q4">${IC.box}</i>Assets</button>
   </div>
   <div class="stats">
    <div class="stat c-rose"><div class="k">Total pending</div><div class="v">${rs(pend)}</div><div class="note">${owing} ${owing==1?'member owes':'members owe'}</div></div>
@@ -386,6 +393,7 @@ function vExpenses(){
 
 /* ---------- Reports & settings ---------- */
 function vMore(){
+  const at=sum(S.assets,a=>a.value);
   const y=V.ry;const ms=months(y+'-01',y+'-12');
   const R=ms.map(mo=>({mo,ex:sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee),in:sum(S.payments.filter(p=>p.date.slice(0,7)===mo),p=>p.amount),out:sum(S.expenses.filter(e=>e.date.slice(0,7)===mo),e=>e.amount)}));
   const s=S.settings;
@@ -394,6 +402,7 @@ function vMore(){
    <div class="scroll"><table><thead><tr><th>Month</th><th>Should come</th><th>Received</th><th>Spent</th><th>Saved</th></tr></thead><tbody>${R.map(r=>`<tr><td>${MN[+r.mo.slice(5)-1]}</td><td>${rs(r.ex)}</td><td>${rs(r.in)}</td><td>${rs(r.out)}</td><td>${rs(r.in-r.out)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(R,r=>r.ex))}</td><td>${rs(sum(R,r=>r.in))}</td><td>${rs(sum(R,r=>r.out))}</td><td>${rs(sum(R,r=>r.in-r.out))}</td></tr></tfoot></table></div>
    <div class="btns" style="margin-top:12px"><button class="btn gold" onclick="window.print()">Print</button><button class="btn green" onclick="shareSummary()">Share on WhatsApp</button></div>
   </div></details>
+  <div class="hero" style="cursor:pointer" onclick="go('assets')"><i style="width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:none;background:linear-gradient(140deg,#e7c25f,#bf8f1c)">${IC.box}</i><div class="grow"><div class="hk">Masjid assets</div><div class="hv" style="font-size:22px">${rs(at)}</div><div class="hs">${S.assets.length} items · tap to view report</div></div><b style="font-size:22px">›</b></div>
   <details class="box"><summary>Download & backup</summary><div class="boxin">
    <p class="note" style="margin-top:0">All data stays on this phone. Download a backup every month and keep it safe (WhatsApp it to yourself or save to Google Drive).</p>
    <div class="btns"><button class="btn" onclick="backup()">Download backup</button><button class="btn ghost" onclick="fileIn.click()">Restore backup</button></div>
@@ -506,7 +515,16 @@ function delPay(pid){const p=S.payments.find(x=>x.id===pid);if(!confirm('Delete 
 function waNum(ph){let d=String(ph||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.startsWith('0'))d='92'+d.slice(1);else if(d.length===10&&d.startsWith('3'))d='92'+d;return d}
 function wa(ph,text){window.open('https://wa.me/'+waNum(ph)+'?text='+encodeURIComponent(text),'_blank')}
 function remind(id){const m=byId(id);const s=summary(m);const st=S.settings;
-  wa(m.phone,`Assalam o Alaikum ${m.name} sahib,\n\n${st.name} (${st.place}) monthly chanda:\nPending: ${rs(s.bal)} (${s.mDue} month${s.mDue>1?'s':''}, up to ${mL(curMonth())})\n\nPlease pay at your earliest. JazakAllah Khair.`)}
+  const fee=+m.fee||0,arrLeft=Math.max(0,(+m.arrears||0)-paidBy(m.id));
+  const pm=dueMonthsList(m).filter(mo=>mStatus(m,mo)!=='paid');
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`محترم *${m.name}* صاحب`,'',`*${st.nameUr||st.name}* (${st.place}) کے ماہانہ چندہ کے سلسلے میں عاجزانہ یاد دہانی:`,''];
+  L.push(`💰 بقایا رقم: *${uRs(s.bal)}*`);
+  if(pm.length)L.push(`📅 برائے ماہ: *${uMonths(pm)}*${pm.length>1?' ('+pm.length+' ماہ)':''}`);
+  if(arrLeft)L.push(`🔹 سابقہ بقایا: ${uRs(arrLeft)}`);
+  if(fee)L.push(`ماہانہ چندہ: ${uRs(fee)}`);
+  L.push('','براہ کرم اپنی سہولت کے مطابق جلد ادائیگی فرما کر مسجد کی خدمت میں شریک ہوں۔','اگر آپ ادائیگی کر چکے ہیں تو براہ کرم اس پیغام کو نظر انداز فرمائیں۔','','اللہ تعالیٰ آپ کو جزائے خیر عطا فرمائے۔ آمین','جزاک اللہ خیراً 🤲');
+  wa(m.phone,L.join('\n'))}
+function dueMonthsList(m){const up=curMonth();const end=m.end&&m.end<up?m.end:up;return months(m.start,end)}
 const UM=['جنوری','فروری','مارچ','اپریل','مئی','جون','جولائی','اگست','ستمبر','اکتوبر','نومبر','دسمبر'];
 const uMon=m=>UM[+m.slice(5)-1]+' '+m.slice(0,4);
 const uRs=n=>Math.round(n).toLocaleString('en-PK')+' روپے';
@@ -554,8 +572,16 @@ function receiptPrompt(pid){const p=S.payments.find(x=>x.id===pid);const m=byId(
 function shareSummary(){const cm=curMonth();const st=S.settings;
   const inM=sum(S.payments.filter(p=>p.date.slice(0,7)===cm),p=>p.amount),out=sum(S.expenses.filter(e=>e.date.slice(0,7)===cm),e=>e.amount);
   const act=S.members.filter(m=>activeIn(m,cm));const paid=act.filter(m=>mStatus(m,cm)==='paid').length;
-  const cash=sum(S.payments,p=>p.amount)-sum(S.expenses,e=>e.amount);
-  window.open('https://wa.me/?text='+encodeURIComponent(`*${st.name}* — ${mL(cm)}\n\nMembers paid: ${paid} of ${act.length}\nChanda received: ${rs(inM)}\nKharcha: ${rs(out)}\nTotal pending: ${rs(sum(S.members,m=>Math.max(0,summary(m).bal)))}\nCash in hand: ${rs(cash)}`),'_blank')}
+  const cash=sum(S.payments,p=>p.amount)-sum(S.expenses,e=>e.amount);const pend=sum(S.members,m=>Math.max(0,summary(m).bal));
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*ماہانہ رپورٹ — ${uMon(cm)}* 📋`,'',
+   `👥 چندہ ادا کرنے والے: ${paid} از ${act.length} اراکین`,`💚 وصول شدہ چندہ: *${uRs(inM)}*`,`🧾 مسجد کے اخراجات: ${uRs(out)}`];
+  const ex=S.expenses.filter(e=>e.date.slice(0,7)===cm);
+  CATS.forEach(c=>{const v=sum(ex.filter(e=>e.cat===c),e=>e.amount);if(v)L.push(`    • ${CATU[c]||c}: ${uRs(v)}`)});
+  L.push(`⏳ کل بقایا جات: ${uRs(pend)}`,`💰 *موجودہ رقم (خزانہ): ${uRs(cash)}*`);
+  if(S.assets.length)L.push(`📦 اثاثہ جات کی تخمینی مالیت: ${uRs(sum(S.assets,a=>a.value))}`);
+  L.push('','اللہ تعالیٰ تمام معاونین کو جزائے خیر عطا فرمائے۔ آمین 🤲');
+  window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
+const CATU={'Electricity bill':'بجلی کا بل','Imam salary':'امام صاحب کی تنخواہ','Muazzin salary':'مؤذن صاحب کی تنخواہ','Gas bill':'گیس کا بل','Water':'پانی','Repairs':'مرمت','Cleaning':'صفائی','Other':'دیگر'};
 
 /* ---------- Expense form ---------- */
 function expForm(id){
@@ -580,7 +606,7 @@ async function dl(name,text,type){const b=new Blob([text],{type});
   dlAnchor(name,b)}
 function dlAnchor(name,b){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function backup(){dl('masjid-chanda-backup-'+today()+'.json',JSON.stringify(S,null,1),'application/json');toast('Backup downloaded')}
-fileIn.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.members||!d.payments)throw 0;if(!confirm('Replace all data on this phone with this backup ('+d.members.length+' members, '+d.payments.length+' payments)?'))return;d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];S=d;save();render();toast('Backup restored')}catch(_){toast('This file is not a valid backup')}};r.readAsText(f);fileIn.value=''};
+fileIn.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.members||!d.payments)throw 0;if(!confirm('Replace all data on this phone with this backup ('+d.members.length+' members, '+d.payments.length+' payments)?'))return;d.settings={...DEF.settings,...d.settings};d.expenses=d.expenses||[];d.assets=d.assets||[];S=d;save();render();toast('Backup restored')}catch(_){toast('This file is not a valid backup')}};r.readAsText(f);fileIn.value=''};
 const csvCell=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
 function csvMembers(){const rows=[['Name','Father','House','Phone','Monthly','From','Left after','Total due','Paid','Balance','Months pending']];
   S.members.forEach(m=>{const s=summary(m);rows.push([m.name,m.father,m.house,m.phone,m.fee,m.start,m.end,s.due,s.paid,s.bal,s.mDue])});
@@ -588,6 +614,68 @@ function csvMembers(){const rows=[['Name','Father','House','Phone','Monthly','Fr
 function csvPayments(){const rows=[['Date','Name','Amount','Received by','Note']];
   [...S.payments].sort((a,b)=>a.date.localeCompare(b.date)).forEach(p=>{const m=byId(p.memberId);rows.push([p.date,m?m.name:'',p.amount,p.by,p.note])});
   dl('payments-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv');toast('Payments downloaded')}
+
+/* ---------- Assets ---------- */
+const ACATS=[['building','Building & land','عمارت و زمین','#0e7a52'],['carpet','Carpets & mats','صفیں و قالین','#b7791f'],['sound','Sound system','ساؤنڈ سسٹم','#1f5fc9'],['fan','Fans, AC & coolers','پنکھے، اے سی و کولر','#0b8285'],['light','Lights & electrical','بجلی کا سامان','#c2410c'],['water','Water & wudu','پانی و وضو خانہ','#2563c9'],['books','Quran & books','قرآن مجید و کتب','#7c3aed'],['furniture','Furniture','فرنیچر','#be185d'],['kitchen','Utensils & kitchen','برتن','#9a6c0c'],['other','Other','دیگر','#5d7268']];
+const ACAT=k=>ACATS.find(c=>c[0]===k)||ACATS[ACATS.length-1];
+const ACOND=[['good','Good','اچھی حالت','paid'],['repair','Needs repair','مرمت طلب','part'],['bad','Damaged','خراب','due']];
+const ACON=k=>ACOND.find(c=>c[0]===k)||ACOND[0];
+V.af='all';
+function vAssets(){
+  const A=S.assets;const tot=sum(A,a=>a.value);
+  const byCat=ACATS.map(c=>({c,L:A.filter(a=>a.cat===c[0])})).filter(x=>x.L.length);
+  const shown=A.filter(a=>V.af==='all'||a.cat===V.af).sort((x,y)=>(+y.value||0)-(+x.value||0));
+  const don=sum(A.filter(a=>a.src==='donated'),a=>a.value);
+  const G={good:'#0e7a52,#16a974',repair:'#d68910,#f2b84b',bad:'#d23b56,#f2768a'};
+  const cond=ACOND.map(c=>{const X=A.filter(a=>(a.cond||'good')===c[0]);return{c,n:X.length,v:sum(X,a=>a.value)}});
+  return `<button class="mini" style="margin:6px 0 2px;font-size:14px" onclick="go('more')">‹ Reports</button>
+  <div class="hero"><i style="width:60px;height:60px;border-radius:18px;display:grid;place-items:center;flex:none;background:linear-gradient(140deg,#e7c25f,#bf8f1c)">${IC.box}</i><div class="grow"><div class="hk">Total value of masjid assets</div><div class="hv">${rs(tot)}</div><div class="hs">${A.length} items · approximate value</div></div></div>
+  ${A.length?`<div class="acats">${byCat.map(({c,L})=>`<button class="acat ${V.af===c[0]?'on':''}" style="--c:${c[3]}" onclick="V.af=V.af==='${c[0]}'?'all':'${c[0]}';render()"><b>${esc(c[1])}</b><span>${rs(sum(L,a=>a.value))}</span><small>${L.length} item${L.length>1?'s':''}</small></button>`).join('')}</div>
+  <div class="chips"><button class="chip ${V.af==='all'?'on':''}" onclick="V.af='all';render()">All (${A.length})</button>${byCat.map(({c,L})=>`<button class="chip ${V.af===c[0]?'on':''}" onclick="V.af='${c[0]}';render()">${esc(c[1])} (${L.length})</button>`).join('')}</div>`:''}
+  <div class="list">${shown.length?shown.map(a=>{const c=ACAT(a.cat),k=ACON(a.cond);return `<div class="row" onclick="assetForm('${a.id}')"><span class="av ex" style="background:${c[3]}">${esc((a.name||'?').trim()[0].toUpperCase())}</span><div class="grow"><div class="t">${esc(a.name)}${+a.qty>1?` <span class="s">× ${+a.qty}</span>`:''}</div><div class="s">${esc(c[1])}${a.place?' · '+esc(a.place):''}${a.src==='donated'?' · donated'+(a.donor?' by '+esc(a.donor):''):''}</div></div><div style="text-align:right"><div class="amt">${rs(a.value)}</div><span class="pill ${k[3]}" style="font-size:10.5px;padding:2px 7px">${k[1]}</span></div></div>`}).join(''):`<div class="empty">${A.length?'No assets in this category.':'<b>No assets yet</b><br>Add the masjid\'s things — carpets, fans, sound system, water cooler, books — with a rough value.<br><br><button class="btn" onclick="assetForm()">Add first asset</button>'}</div>`}</div>
+  ${A.length?`<details class="box" style="margin-top:12px" open><summary>Assets report</summary><div class="boxin">
+   <div class="scroll"><table><thead><tr><th>Category</th><th>Items</th><th>Qty</th><th>Value</th></tr></thead><tbody>${byCat.map(({c,L})=>`<tr><td>${esc(c[1])}</td><td>${L.length}</td><td>${sum(L,a=>a.qty||1)}</td><td>${rs(sum(L,a=>a.value))}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${A.length}</td><td>${sum(A,a=>a.qty||1)}</td><td>${rs(tot)}</td></tr></tfoot></table></div>
+   <h2 style="font-size:15px">Condition</h2>
+   <div class="sum3">${cond.map(({c,n,v})=>`<div style="background:linear-gradient(140deg,${G[c[0]]})"><small>${c[1]}</small><b>${n} item${n==1?'':'s'}</b><small>${rs(v)}</small></div>`).join('')}</div>
+   <p class="note" style="margin:0 0 12px">Donated: ${rs(don)} · Bought by masjid: ${rs(tot-don)}</p>
+   <div class="btns"><button class="btn green" onclick="shareAssets()">Share in Urdu</button><button class="btn gold" onclick="window.print()">Print</button></div>
+   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="csvAssets()">Download Excel</button></div>
+  </div></details>`:''}`;
+}
+function assetForm(id){
+  const a=id?S.assets.find(x=>x.id===id):{name:'',cat:'carpet',qty:1,value:'',cond:'good',src:'bought',donor:'',date:today(),place:'',note:''};
+  openSheet(id?'Edit asset':'Add asset',`
+   <label class="f">Item name *</label><input class="in" id="aN" value="${esc(a.name)}" placeholder="e.g. Ceiling fan, Prayer carpet, Amplifier">
+   <label class="f">Category</label><select class="in" id="aC">${ACATS.map(c=>`<option value="${c[0]}" ${c[0]===a.cat?'selected':''}>${c[1]} — ${c[2]}</option>`).join('')}</select>
+   <div class="two"><div><label class="f">Quantity</label><input class="in" id="aQ" type="number" inputmode="numeric" min="1" value="${+a.qty||1}"></div><div><label class="f">Total value, rough (Rs)</label><input class="in" id="aV" type="number" inputmode="numeric" value="${a.value}" placeholder="e.g. 25000"></div></div>
+   <label class="f">Condition</label><div class="chips" id="aK">${ACOND.map(c=>`<button type="button" class="chip ${c[0]===(a.cond||'good')?'on':''}" data-v="${c[0]}" onclick="pick(this)">${c[1]}</button>`).join('')}</div>
+   <label class="f">How did the masjid get it?</label><div class="chips" id="aS">${[['bought','Bought by masjid'],['donated','Donated']].map(([k,l])=>`<button type="button" class="chip ${k===(a.src||'bought')?'on':''}" data-v="${k}" onclick="pick(this);aDw.style.display=this.dataset.v==='donated'?'block':'none'">${l}</button>`).join('')}</div>
+   <div id="aDw" style="display:${a.src==='donated'?'block':'none'}"><label class="f">Donor name (optional)</label><input class="in" id="aD" value="${esc(a.donor)}"></div>
+   <div class="two"><div><label class="f">Date received</label><input class="in" id="aT" type="date" value="${a.date||''}"></div><div><label class="f">Where is it?</label><input class="in" id="aP" value="${esc(a.place)}" placeholder="e.g. Main hall"></div></div>
+   <label class="f">Note (optional)</label><input class="in" id="aO" value="${esc(a.note)}">
+   <button class="btn full" style="margin-top:16px" onclick="saveAsset('${id||''}')">${id?'Save changes':'Add asset'}</button>
+   ${id?`<button class="btn red full" style="margin-top:8px" onclick="delAsset('${id}')">Delete</button>`:''}`);
+}
+function pick(b){b.parentNode.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on')}
+const picked=id=>{const b=document.querySelector('#'+id+' .chip.on');return b?b.dataset.v:''};
+function saveAsset(id){const name=aN.value.trim();if(!name){toast('Enter the item name');aN.focus();return}
+  const src=picked('aS')||'bought';
+  const d={name,cat:aC.value,qty:Math.max(1,+aQ.value||1),value:+aV.value||0,cond:picked('aK')||'good',src,donor:src==='donated'?aD.value.trim():'',date:aT.value,place:aP.value.trim(),note:aO.value.trim()};
+  if(id)Object.assign(S.assets.find(x=>x.id===id),d);else S.assets.push({id:uid(),...d});
+  save();closeSheet();V.tab='assets';render();toast(id?'Changes saved':'Asset added')}
+function delAsset(id){if(!confirm('Delete this asset?'))return;S.assets=S.assets.filter(x=>x.id!==id);save();closeSheet();render();toast('Asset deleted')}
+function csvAssets(){const rows=[['Item','Category','Quantity','Value (Rs)','Condition','Bought/Donated','Donor','Date','Location','Note']];
+  S.assets.forEach(a=>rows.push([a.name,ACAT(a.cat)[1],a.qty,a.value,ACON(a.cond)[1],a.src==='donated'?'Donated':'Bought',a.donor,a.date,a.place,a.note]));
+  dl('masjid-assets-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv');toast('Assets list downloaded')}
+function shareAssets(){const st=S.settings,A=S.assets,tot=sum(A,a=>a.value);
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,'*اثاثہ جات کی رپورٹ* 📋',`بتاریخ ${uDate(today())}`,''];
+  ACATS.forEach(c=>{const X=A.filter(a=>a.cat===c[0]);if(!X.length)return;L.push(`▪️ *${c[2]}*: ${uRs(sum(X,a=>a.value))}`);X.forEach(a=>L.push(`    • ${a.name}${+a.qty>1?' ('+a.qty+' عدد)':''}: ${uRs(a.value)}${a.cond&&a.cond!=='good'?' — '+ACON(a.cond)[2]:''}`));L.push('')});
+  const don=sum(A.filter(a=>a.src==='donated'),a=>a.value);const rep=A.filter(a=>a.cond&&a.cond!=='good').length;
+  L.push(`💰 *کل تخمینی مالیت: ${uRs(tot)}*`,`📦 کل اشیاء: ${A.length}`);
+  if(don)L.push(`🎁 عطیہ شدہ اشیاء کی مالیت: ${uRs(don)}`);
+  if(rep)L.push(`🔧 مرمت طلب / خراب اشیاء: ${rep}`);
+  L.push('','نوٹ: تمام رقوم تخمینی ہیں۔','','جزاک اللہ خیراً 🤲');
+  window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
 
 /* ---------- Excel import ---------- */
 const IF=[['name','Name *',/^(member\s*)?name$|^naam|^full\s*name|^member$/i],['father','Father name',/father|walid|s\s*\/\s*o|f\.?\s*name/i],['house','House / street',/house|address|mohall|street|ghar|area|location/i],['phone','Mobile number',/phone|mobile|cell|contact|whats|number|no\.?$/i],['fee','Monthly amount',/month|amount|fee|chanda/i],['arrears','Old dues',/old|arrear|previous|baqaya|pending|due/i]];
