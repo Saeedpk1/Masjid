@@ -322,6 +322,19 @@ details.rep2 summary b{font-size:14px}details.rep2 summary span{font-size:12px}
 .qa2 button:nth-child(n+3) i{width:30px;height:30px}
 .qa2 button:nth-child(n+3) i svg{width:17px;height:17px}
 @media (max-width:380px){header h1{font-size:13.5px;letter-spacing:.4px}header .place{font-size:10.5px}}
+
+.mcard{display:flex;align-items:center;gap:14px;padding:14px;border-radius:20px;color:#fff;margin-bottom:6px;background:linear-gradient(135deg,#0a5a3c,#0e7a52 55%,#18a571);box-shadow:0 10px 24px rgba(14,122,82,.3)}
+.mcard b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mcard span:not(.av){display:block;font-size:12.5px;color:#cdeedd}
+.av.big{width:56px;height:56px;font-size:20px;border:3px solid #e5c26a;flex:none}
+.fl{display:flex;gap:10px;align-items:flex-start;margin-top:4px}
+.fl>i{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-style:normal;font-size:17px;flex:none;margin-top:30px;box-shadow:0 3px 8px rgba(0,0,0,.12)}
+.fl .chips{margin-bottom:6px}
+.fl>.grow,.mcard .grow{flex:1;min-width:0}
+.sheet{overflow-x:hidden}
+details.more{margin-top:14px;border:1.5px dashed var(--line);border-radius:14px;padding:10px 12px}
+details.more summary{font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer}
+.btn.big2{margin-top:16px;padding:15px;font-size:16px}
 </style>
 </head>
 <body>
@@ -588,7 +601,7 @@ function vMore(){
    <p class="note">Changing the default amount only applies to members you add later.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 10 · One Donations button</p>
+  <p class="note" style="text-align:center">App version 11 · Simple member form</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -619,26 +632,45 @@ function memberSheet(id){
 
 /* ---------- Member form ---------- */
 function memberForm(id){
-  const m=id?byId(id):{name:'',father:'',house:'',phone:'',fee:S.settings.fee,start:curMonth(),arrears:0,end:''};
-  openSheet(id?'Edit member':'Add member',`
-   <label class="f">Name *</label><input class="in" id="fN" value="${esc(m.name)}" placeholder="e.g. Muhammad Ali">
-   <label class="f">Father's name</label><input class="in" id="fF" value="${esc(m.father)}">
-   <label class="f">House / street</label><input class="in" id="fH" value="${esc(m.house)}" placeholder="e.g. Near school, Mohalla Bala">
-   <label class="f">Mobile number</label><input class="in" id="fP" type="tel" inputmode="tel" value="${esc(m.phone)}" placeholder="03xx xxxxxxx">
-   <div class="two"><div><label class="f">Monthly chanda (Rs)</label><input class="in" id="fA" type="number" inputmode="numeric" value="${+m.fee}"></div><div><label class="f">Paying from</label><input class="in" id="fS" type="month" value="${m.start}"></div></div>
-   <label class="f">Old dues before this app (Rs)</label><input class="in" id="fR" type="number" inputmode="numeric" value="${+m.arrears||0}">
-   <label class="f">Left the mohalla after (leave empty if still here)</label><input class="in" id="fE" type="month" value="${m.end||''}">
-   <div class="btns" style="margin-top:16px"><button class="btn" onclick="saveMember('${id||''}')">${id?'Save changes':'Add member'}</button></div>
-   ${id?`<div class="btns" style="margin-top:8px"><button class="btn red" onclick="delMember('${id}')">Delete member</button></div>`:''}`);
+  const m=id?byId(id):{name:'',father:'',house:'',phone:'',fee:S.settings.fee,start:curMonth(),joined:today(),arrears:0,end:''};
+  const jd=m.joined||(m.start+'-01');const fees=[...new Set([300,500,1000,+S.settings.fee||500])].sort((a,b)=>a-b);
+  const lm=addM(curMonth(),-1);
+  openSheet(id?'Edit member':'New member',`
+   <div class="mcard"><span class="av big" id="fAv">+</span><div class="grow"><b id="fNm">${id?esc(m.name):'Member name'}</b><span id="fPh">${id&&m.phone?esc(m.phone):'Mobile number'}</span><span id="fFe">Rs ${+m.fee} / month · from ${mL(m.start)}</span></div></div>
+   <div class="fl"><i style="background:#1f5fc9">👤</i><div class="grow"><label class="f">Name *</label><input class="in" id="fN" dir="auto" value="${esc(m.name)}" placeholder="e.g. Muhammad Ali" oninput="memLive()" autocomplete="off"></div></div>
+   <div class="fl"><i style="background:#1aa856">📱</i><div class="grow"><label class="f">Mobile number</label><input class="in" id="fP" type="tel" inputmode="tel" value="${esc(m.phone)}" placeholder="03xx xxxxxxx" oninput="memLive()"></div></div>
+   <div class="fl"><i style="background:#bd8a17">💰</i><div class="grow"><label class="f">Monthly chanda (Rs)</label>
+    <div class="chips" id="fAc">${fees.map(v=>`<button type="button" class="chip ${v===+m.fee?'on':''}" onclick="pick(this);fA.value=${v};memLive()">${rs(v)}</button>`).join('')}</div>
+    <input class="in" id="fA" type="number" inputmode="numeric" value="${+m.fee}" oninput="document.querySelectorAll('#fAc .chip').forEach(c=>c.classList.toggle('on',c.textContent==='Rs '+(+this.value).toLocaleString('en-PK')));memLive()"></div></div>
+   <div class="fl"><i style="background:#7c3aed">📅</i><div class="grow"><label class="f">Start date</label>
+    <div class="chips" id="fSc"><button type="button" class="chip ${m.start===curMonth()?'on':''}" onclick="pick(this);fS.value=today();memLive()">This month</button><button type="button" class="chip ${m.start===lm?'on':''}" onclick="pick(this);fS.value='${lm}-01';memLive()">Last month</button><button type="button" class="chip ${m.start===new Date().getFullYear()+'-01'?'on':''}" onclick="pick(this);fS.value='${new Date().getFullYear()}-01-01';memLive()">From January</button></div>
+    <input class="in" id="fS" type="date" value="${jd}" onchange="document.querySelectorAll('#fSc .chip').forEach(c=>c.classList.remove('on'));memLive()"></div></div>
+   <details class="more"><summary>More options (not required)</summary>
+    <label class="f">Father's name</label><input class="in" id="fF" dir="auto" value="${esc(m.father||'')}">
+    <label class="f">House / street</label><input class="in" id="fH" dir="auto" value="${esc(m.house||'')}">
+    <label class="f">Old dues before this app (Rs)</label><input class="in" id="fR" type="number" inputmode="numeric" value="${+m.arrears||0}">
+    <label class="f">Left the mohalla after (leave empty if still here)</label><input class="in" id="fE" type="month" value="${m.end||''}">
+   </details>
+   <button class="btn full big2" onclick="saveMember('${id||''}')">✓ ${id?'Save changes':'Add member'}</button>
+   ${id?`<button class="btn red full" style="margin-top:8px" onclick="delMember('${id}')">Delete member</button>`:`<button class="btn ghost full" style="margin-top:8px" onclick="saveMember('',true)">Save & add another</button>`}`);
+  memLive();if(!id)setTimeout(()=>fN.focus(),250);
 }
-function saveMember(id){
+function memLive(){const n=fN.value.trim(),ph=fP.value.trim(),f=+fA.value||0,mo=(fS.value||today()).slice(0,7);
+  const h=av(n||'+');fAv.outerHTML=h.replace('class="av','id="fAv" class="av big');
+  fNm.textContent=n||'Member name';fPh.textContent=ph||'Mobile number';fFe.textContent=`Rs ${f.toLocaleString('en-PK')} / month · from ${mL(mo)}`}
+function saveMember(id,again){
   const name=fN.value.trim();if(!name){toast('Enter the member name');fN.focus();return}
-  if(!fS.value){toast('Choose the month they start paying');return}
-  const d={name,father:fF.value.trim(),house:fH.value.trim(),phone:fP.value.trim(),fee:+fA.value||0,start:fS.value,arrears:+fR.value||0,end:fE.value||''};
+  if(!fS.value){toast('Choose the start date');return}
+  const ph=fP.value.trim();if(ph&&ph.replace(/\D/g,'').length<10){toast('Mobile number looks too short');fP.focus();return}
+  if(!id){const dupl=S.members.find(x=>x.name.trim().toLowerCase()===name.toLowerCase()&&(!ph||!x.phone||x.phone.replace(/\D/g,'').slice(-10)===ph.replace(/\D/g,'').slice(-10)));
+    if(dupl&&!confirm(dupl.name+' is already in the list. Add again?'))return}
+  const d={name,phone:ph,fee:+fA.value||0,joined:fS.value,start:fS.value.slice(0,7),father:fF.value.trim(),house:fH.value.trim(),arrears:+fR.value||0,end:fE.value||''};
   if(d.end&&d.end<d.start){toast('"Left after" must be after the start month');return}
   if(id)Object.assign(byId(id),d);else S.members.push({id:uid(),...d});
-  save();toast(id?'Changes saved':'Member added');
-  if(id)memberSheet(id);else{closeSheet()}render();
+  save();render();
+  if(id){memberSheet(id);toast('Changes saved');return}
+  toast(name+' added ✓');
+  if(again){memberForm();return}closeSheet();
 }
 function delMember(id){const m=byId(id);if(!confirm('Delete '+m.name+' and all their payments?'))return;S.members=S.members.filter(x=>x.id!==id);S.payments=S.payments.filter(p=>p.memberId!==id);save();closeSheet();render();toast('Member deleted')}
 function bulkForm(){
