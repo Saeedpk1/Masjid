@@ -344,6 +344,9 @@ table.dr td:nth-child(2),table.dr th:nth-child(2){text-align:left}
 table.at td{line-height:1.9}
 .step{display:flex;gap:8px;align-items:center}.step .in{text-align:center;font-size:18px;font-weight:800}
 .step button{width:48px;height:46px;flex:none;border:0;border-radius:13px;background:var(--pri-soft);color:var(--pri);font-size:24px;font-weight:800}
+table.et td:nth-child(2){font-family:"Noto Nastaliq Urdu","Jameel Noori Nastaleeq",Manrope,sans-serif;line-height:1.9;text-align:left}
+table.et th:nth-child(2){text-align:left}
+table.sm2 td:first-child{font-weight:700}
 </style>
 </head>
 <body>
@@ -430,7 +433,7 @@ function render(){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(V.tab==='assets'||V.tab==='donations'?'home':V.tab)));
   main.innerHTML=({home:vHome,members:vMembers,collect:vCollect,expenses:vExpenses,more:vMore,assets:vAssets,donations:vDonations})[V.tab]();
   const fab=document.getElementById('fab');
-  const F={members:['+ Add member',()=>memberForm()],collect:['+ Receive',()=>payForm()],expenses:['+ Add kharcha',()=>expForm()]}[V.tab];
+  const F={members:['+ Add member',()=>memberForm()],collect:['+ Receive',()=>payForm()]}[V.tab];
   if(F){fab.style.display='block';fab.textContent=F[0];fab.onclick=F[1]}else fab.style.display='none';
   if(V.tab==='members')drawMembers();
 }
@@ -549,14 +552,16 @@ function vCollect(){
 }
 
 /* ---------- Expenses ---------- */
-const expName=e=>e.cat==='Other'&&e.other?e.other:e.cat;
+const EXPS=['بجلی کا بل','گیس کا بل','پانی کا بل','امام صاحب کی تنخواہ','مؤذن صاحب کی تنخواہ','خادم کی تنخواہ','صفائی','صفائی کا سامان','صفوں کی دھلائی','مرمت','رنگ و روغن','بجلی کا کام','پلمبر کا کام','لاؤڈ اسپیکر کی مرمت','پانی کی موٹر کی مرمت','جنریٹر کا تیل / ڈیزل','یو پی ایس / بیٹری','قرآن مجید و کتب','افطاری','دینی پروگرام / جلسہ','پرنٹنگ و اسٹیشنری','کرایہ / ٹرانسپورٹ'];
+const expName=e=>e.name||(e.cat==='Other'&&e.other?e.other:(typeof CATU!=='undefined'&&CATU[e.cat])||e.cat);
 const CATS=['Electricity bill','Imam salary','Muazzin salary','Gas bill','Water','Repairs','Cleaning','Other'];
 function vExpenses(){
-  const mo=V.em;const L=S.expenses.filter(e=>e.date.slice(0,7)===mo).sort((a,b)=>b.date.localeCompare(a.date));
-  const inM=chandaIn(mo)+donIn(mo);const out=sum(L,e=>e.amount);
+  const mo=V.em;const L=S.expenses.filter(e=>e.date.slice(0,7)===mo).sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));const out=sum(L,e=>e.amount);
   return `<div class="monthbar"><button onclick="V.em=addM(V.em,-1);render()" aria-label="Previous month">‹</button><b>${mL(mo)}</b><button onclick="V.em=addM(V.em,1);render()" aria-label="Next month">›</button></div>
-  <div class="stats"><div class="stat"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/></svg>Chanda + donations</div><div class="v">${rs(inM)}</div></div><div class="stat c-rose"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>Kharcha (spent)</div><div class="v">${rs(out)}</div></div><div class="stat wide c-gold"><div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved this month</div><div class="v">${rs(inM-out)}</div></div></div>
-  <div class="list">${L.length?L.map(e=>`<div class="row" onclick="expForm('${e.id}')">${av(expName(e),true)}<div class="grow"><div class="t">${esc(expName(e))}</div><div class="s">${dL(e.date)}${e.note?' · '+esc(e.note):''}</div></div><div class="amt red">${rs(e.amount)}</div></div>`).join(''):'<div class="empty">No kharcha recorded for this month.</div>'}</div>`;
+  <div class="hero" style="background:linear-gradient(135deg,#b3243e,#d23b56 50%,#f2768a);box-shadow:0 12px 28px rgba(210,59,86,.3)"><i style="width:56px;height:56px;border-radius:18px;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.18)">${IC.exp}</i><div class="grow"><div class="hk" style="color:#ffe1e6">Kharcha in ${mL(mo)}</div><div class="hv">${rs(out)}</div><div class="hs" style="color:#ffe1e6">${L.length} expense${L.length==1?'':'s'}</div></div></div>
+  <button class="btn full" style="margin-bottom:12px;padding:14px;font-size:16px;background:linear-gradient(135deg,#d23b56,#f2768a);box-shadow:0 6px 16px rgba(210,59,86,.3)" onclick="expForm()">＋ Add kharcha</button>
+  ${L.length?`<div class="scroll"><table class="rt dt et"><thead><tr><th>#</th><th>Expense</th><th>Date</th><th>Amount</th></tr></thead><tbody>${L.map((e,i)=>`<tr onclick="expForm('${e.id}')"><td>${i+1}</td><td>${esc(expName(e))}</td><td>${dL(e.date)}</td><td>${rs(e.amount)}</td></tr>`).join('')}</tbody><tfoot><tr><td></td><td>Total</td><td></td><td>${rs(out)}</td></tr></tfoot></table></div><p class="note" style="text-align:center">Tap a row to edit or delete.</p>`
+  :`<div class="list"><div class="empty">No kharcha in ${mL(mo)}.<br>Tap <b>＋ Add kharcha</b> above to record one.</div></div>`}`;
 }
 
 /* ---------- Reports & settings ---------- */
@@ -583,14 +588,19 @@ function vMore(){
    `<div class="scroll"><table class="rt dr"><thead><tr><th>#</th><th>Donor</th><th>Date</th><th>Amount</th></tr></thead><tbody>${Ys.map((d,i)=>`<tr><td>${i+1}</td><td>${esc(d.name||'—')}</td><td>${dL(d.date)}</td><td>${rs(d.amount)}</td></tr>`).join('')}</tbody><tfoot><tr><td></td><td>Total</td><td></td><td>${rs(dTot)}</td></tr></tfoot></table></div>`+
    repFoot()+repBtns(`<button class="btn green sm" onclick="shareDonYear()">Share in Urdu</button>`,`<button class="btn ghost sm" onclick="go('donations')">All ›</button>`)
    :`<div class="empty">No donations recorded in ${y}.</div>`);
-  const inc=letterhead('Income & Expenditure Statement',per)+kpis([['Total income',rs(tI),'var(--ok)'],['Total kharcha',rs(tE),'var(--bad)'],['Net saving',rs(tI-tE)],['Cash in hand',rs(cashInHand()),'#9a6c0c']])+
-   `<div class="scroll"><table class="rt"><thead><tr><th>Month</th><th>Chanda</th><th>Donations</th><th>Kharcha</th><th>Net</th></tr></thead><tbody>${I.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}</td><td>${rs(r.c)}</td><td>${rs(r.d)}</td><td>${rs(r.e)}</td><td class="${r.c+r.d-r.e<0?'neg':''}">${rs(r.c+r.d-r.e)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(I,r=>r.c))}</td><td>${rs(sum(I,r=>r.d))}</td><td>${rs(tE)}</td><td>${rs(tI-tE)}</td></tr></tfoot></table></div>`+
-   repFoot()+repBtns(`<button class="btn green sm" onclick="shareIncomeYear()">Share in Urdu</button><button class="btn green sm" onclick="shareSummary()">This month</button>`);
+  const EX=S.expenses.filter(e=>e.date.slice(0,4)==String(y)).sort((a,b)=>a.date.localeCompare(b.date));
+  const inc=letterhead('Kharcha Report',per)+
+   `<div class="scroll"><table class="rt dr et"><thead><tr><th>#</th><th>Expense</th><th>Date</th><th>Amount</th></tr></thead><tbody>${EX.length?EX.map((e,i)=>`<tr><td>${i+1}</td><td>${esc(expName(e))}</td><td>${dL(e.date)}</td><td>${rs(e.amount)}</td></tr>`).join(''):`<tr><td colspan="4" style="text-align:center;color:var(--muted)">No kharcha in ${y}</td></tr>`}</tbody><tfoot><tr><td></td><td>Total kharcha</td><td></td><td>${rs(tE)}</td></tr></tfoot></table></div>
+   <h4>Summary ${y}</h4><div class="scroll"><table class="rt sm2"><tbody>
+    <tr><td>Monthly chanda</td><td>${rs(sum(I,r=>r.c))}</td></tr><tr><td>Donations</td><td>${rs(sum(I,r=>r.d))}</td></tr>
+    <tr><td>Total kharcha</td><td style="color:var(--bad)">− ${rs(tE)}</td></tr></tbody>
+    <tfoot><tr><td>Balance (cash in hand)</td><td>${rs(cashInHand())}</td></tr></tfoot></table></div>`+
+   repFoot()+repBtns(`<button class="btn green sm" onclick="shareIncomeYear()">Share in Urdu</button>`);
   return `<div class="monthbar" style="margin-top:8px"><button onclick="V.ry--;render()" aria-label="Previous year">‹</button><b>Reports ${y}</b><button onclick="V.ry++;render()" aria-label="Next year">›</button></div>
   <div class="replist">
   ${repBox('chanda','linear-gradient(140deg,#0e7a52,#16a974)',IC.recv,'Monthly chanda report',`${rs(cIn)} received · ${pct}% collected`,chanda)}
   ${repBox('don','linear-gradient(140deg,#6a3fc8,#9a6cf0)',IC.gift,'Donations report',`${rs(dTot)} · ${Y.length} donation${Y.length==1?'':'s'}`,don)}
-  ${repBox('inc','linear-gradient(140deg,#bd8a17,#e4b94a)',IC.chart,'Income & expenditure',`Net ${rs(tI-tE)} · cash ${rs(cashInHand())}`,inc)}
+  ${repBox('inc','linear-gradient(140deg,#d23b56,#f2768a)',IC.exp,'Kharcha report',`${rs(tE)} spent · cash ${rs(cashInHand())}`,inc)}
   ${repBox('assets','linear-gradient(140deg,#1f5fc9,#4a93f2)',IC.box,'Assets report',`${rs(at)} · ${S.assets.length} item${S.assets.length==1?'':'s'}`,assetReport())}
   </div>
   <details class="box"><summary>Download & backup</summary><div class="boxin">
@@ -607,7 +617,7 @@ function vMore(){
    <p class="note">When you change the amount, the app asks whether to apply it to all members or only new ones.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 14 · Simple assets</p>
+  <p class="note" style="text-align:center">App version 15 · Simple kharcha</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -808,8 +818,7 @@ function shareSummary(){const cm=curMonth();const st=S.settings;
   const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*ماہانہ رپورٹ — ${uMon(cm)}* 📋`,'',
    `👥 چندہ ادا کرنے والے: ${paid} از ${act.length} اراکین`,`💚 وصول شدہ چندہ: *${uRs(inM)}*`,`🎁 عطیات: *${uRs(donIn(cm))}*`,`🧾 مسجد کے اخراجات: ${uRs(out)}`];
   const ex=S.expenses.filter(e=>e.date.slice(0,7)===cm);
-  CATS.filter(c=>c!=='Other').forEach(c=>{const v=sum(ex.filter(e=>e.cat===c),e=>e.amount);if(v)L.push(`    • ${CATU[c]||c}: ${uRs(v)}`)});
-  const og={};ex.filter(e=>e.cat==='Other').forEach(e=>{const k=e.other||'دیگر';og[k]=(og[k]||0)+(+e.amount||0)});Object.entries(og).forEach(([k,v])=>L.push(`    • ${k}: ${uRs(v)}`));
+  {const g={};ex.forEach(e=>{const k=expName(e);g[k]=(g[k]||0)+(+e.amount||0)});Object.entries(g).forEach(([k,v])=>L.push(`    • ${k}: ${uRs(v)}`))}
   L.push(`⏳ کل بقایا جات: ${uRs(pend)}`,`💰 *موجودہ رقم (خزانہ): ${uRs(cash)}*`);
   if(S.assets.length)L.push(`📦 اثاثہ جات کی تخمینی مالیت: ${uRs(sum(S.assets,a=>a.value))}`);
   L.push('','اللہ تعالیٰ تمام معاونین کو جزائے خیر عطا فرمائے۔ آمین 🤲');
@@ -818,20 +827,24 @@ const CATU={'Electricity bill':'بجلی کا بل','Imam salary':'امام صا
 
 /* ---------- Expense form ---------- */
 function expForm(id){
-  const e=id?S.expenses.find(x=>x.id===id):{date:today(),cat:CATS[0],amount:'',note:''};
+  const e=id?S.expenses.find(x=>x.id===id):{name:'',amount:'',date:V.em===curMonth()?today():V.em+'-01'};
+  const nm=id?expName(e):'';const inList=EXPS.includes(nm);const isOther=id&&!inList;
   openSheet(id?'Edit kharcha':'Add kharcha',`
-   <label class="f">What for</label><select class="in" id="eC" onchange="eXw.style.display=this.value==='Other'?'block':'none';if(this.value==='Other')eX.focus()">${CATS.map(c=>`<option ${c===e.cat?'selected':''}>${c}</option>`).join('')}</select>
-   <div id="eXw" style="display:${e.cat==='Other'?'block':'none'}"><label class="f">Write the kharcha *</label><input class="in" id="eX" list="eXl" value="${esc(e.other||'')}" placeholder="e.g. Paint, Loudspeaker repair, Iftar"><datalist id="eXl">${[...new Set(S.expenses.map(x=>x.other).filter(Boolean))].map(o=>`<option value="${esc(o)}">`).join('')}</datalist></div>
-   <div class="two"><div><label class="f">Amount (Rs)</label><input class="in" id="eA" type="number" inputmode="numeric" value="${e.amount}"></div><div><label class="f">Date</label><input class="in" id="eD" type="date" value="${e.date}"></div></div>
-   <label class="f">Note (optional)</label><input class="in" id="eN" value="${esc(e.note)}" placeholder="e.g. WAPDA bill for September">
-   <button class="btn full" style="margin-top:16px" onclick="saveExp('${id||''}')">${id?'Save changes':'Add kharcha'}</button>
+   <div class="fl"><i style="background:#d23b56">🧾</i><div class="grow"><label class="f">Expense *</label>
+    <select class="in ursel" id="eS" onchange="eXw.style.display=this.value==='__other'?'block':'none';if(this.value==='__other')eX.focus()">
+     <option value="">— خرچہ منتخب کریں —</option>${EXPS.map(n=>`<option ${n===nm?'selected':''}>${n}</option>`).join('')}<option value="__other" ${isOther?'selected':''}>✏️ دیگر (لکھیں)</option></select>
+    <div id="eXw" style="display:${isOther?'block':'none'};margin-top:8px"><input class="in" id="eX" dir="auto" value="${isOther?esc(nm):''}" placeholder="Write the expense"></div></div></div>
+   <div class="fl"><i style="background:#bd8a17">💰</i><div class="grow"><label class="f">Amount (Rs) *</label><input class="in" id="eA" type="number" inputmode="numeric" value="${e.amount}" placeholder="0" style="font-size:18px;font-weight:800"></div></div>
+   <div class="fl"><i style="background:#1f5fc9">📅</i><div class="grow"><label class="f">Date</label><input class="in" id="eD" type="date" value="${e.date}"></div></div>
+   <button class="btn full big2" style="background:linear-gradient(135deg,#d23b56,#f2768a)" onclick="saveExp('${id||''}')">✓ ${id?'Save changes':'Add kharcha'}</button>
    ${id?`<button class="btn red full" style="margin-top:8px" onclick="delExp('${id}')">Delete</button>`:''}`);
 }
-function saveExp(id){const a=+eA.value;if(!(a>0)){toast('Enter an amount above 0');return}
-  const oth=eC.value==='Other'?eX.value.trim():'';if(eC.value==='Other'&&!oth){toast('Write what the kharcha is for');eX.focus();return}
-  const d={cat:eC.value,other:oth,amount:a,date:eD.value||today(),note:eN.value.trim()};
+function saveExp(id){const sel=eS.value;const name=sel==='__other'?eX.value.trim():sel;
+  if(!name){toast(sel==='__other'?'Write the expense':'Choose the expense');(sel==='__other'?eX:eS).focus();return}
+  const a=+eA.value;if(!(a>0)){toast('Enter an amount above 0');eA.focus();return}
+  const d={name,cat:'',other:'',amount:a,date:eD.value||today()};
   if(id)Object.assign(S.expenses.find(x=>x.id===id),d);else S.expenses.push({id:uid(),...d});
-  save();closeSheet();V.em=d.date.slice(0,7);render();toast(id?'Changes saved':'Kharcha added')}
+  save();closeSheet();V.em=d.date.slice(0,7);render();toast(id?'Changes saved':'Kharcha added ✓')}
 function delExp(id){const i=S.expenses.findIndex(x=>x.id===id);const e=S.expenses[i];S.expenses.splice(i,1);save();closeSheet();render();toast('Kharcha deleted',()=>{S.expenses.splice(i,0,e);save();render()})}
 
 /* ---------- Backup & export ---------- */
@@ -996,8 +1009,7 @@ function shareIncomeYear(){const y=V.ry,st=S.settings;const ms=months(y+'-01',y+
   const c=sum(ms,chandaIn),d=sum(ms,donIn),e=sum(ms,spentIn);
   const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*آمدن و اخراجات — ${y}* 📊`,'',`💚 ماہانہ چندہ: ${uRs(c)}`,`🎁 عطیات: ${uRs(d)}`,`➕ *کل آمدن: ${uRs(c+d)}*`,'',`🧾 *کل اخراجات: ${uRs(e)}*`];
   const ex=S.expenses.filter(x=>x.date.slice(0,4)==String(y));
-  CATS.filter(k=>k!=='Other').forEach(k=>{const v=sum(ex.filter(x=>x.cat===k),x=>x.amount);if(v)L.push(`    • ${CATU[k]||k}: ${uRs(v)}`)});
-  const og={};ex.filter(x=>x.cat==='Other').forEach(x=>{const k=x.other||'دیگر';og[k]=(og[k]||0)+(+x.amount)});Object.entries(og).forEach(([k,v])=>L.push(`    • ${k}: ${uRs(v)}`));
+  {const g={};ex.forEach(x=>{const k=expName(x);g[k]=(g[k]||0)+(+x.amount||0)});Object.entries(g).forEach(([k,v])=>L.push(`    • ${k}: ${uRs(v)}`))}
   L.push('',`📈 سال کی بچت: ${uRs(c+d-e)}`,`💰 *موجودہ رقم (خزانہ): ${uRs(cashInHand())}*`,'','جزاک اللہ خیراً 🤲');
   window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
 
