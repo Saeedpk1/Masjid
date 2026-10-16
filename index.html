@@ -446,6 +446,29 @@ table.at td:first-child,table.dr.at td:nth-child(2),table.et td:nth-child(2){fon
 .nzimg{border-radius:16px;overflow:hidden;background:var(--na);min-height:120px;margin-bottom:4px}
 .nzimg img{display:block;width:100%;height:auto}
 .nzf .u2{font-family:var(--ur);font-weight:700;color:var(--pri);font-size:14px}
+
+/* v20: compact smart buttons */
+.qa3{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 12px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:10px 6px;box-shadow:var(--shadow)}
+.qa3 button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 0;min-width:0}
+.qa3 button:active i{transform:scale(.92)}
+.qa3 i{position:relative;width:44px;height:44px;border-radius:15px;display:grid;place-items:center;color:#fff;font-style:normal;background:linear-gradient(140deg,var(--c1),var(--c2));box-shadow:0 5px 12px color-mix(in srgb,var(--c1) 40%,transparent);transition:transform .15s}
+.qa3 i svg{width:21px;height:21px}
+.qa3 i b{position:absolute;top:-6px;right:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#d23b56;color:#fff;font-size:10.5px;font-weight:800;display:grid;place-items:center;border:2px solid var(--card)}
+.qa3 i b.n{background:#13203a}
+.qa3 span{font-size:11.5px;font-weight:800;white-space:nowrap}
+.qa3 small{font-family:var(--ur);font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.3}
+.nzh .nxl{display:inline;font-family:inherit;font-size:inherit;color:var(--pri)}
+/* v20: colourful bottom bar */
+nav{background:linear-gradient(180deg,#0e7a52,#0a5a3c);border-top:2px solid #e5c26a;box-shadow:0 -8px 22px rgba(10,90,60,.25)}
+nav button{color:#cdeedd}
+nav button[data-t="home"] svg{color:#f2cf6b}nav button[data-t="members"] svg{color:#8ec5ff}nav button[data-t="expenses"] svg{color:#ff9fb0}nav button[data-t="more"] svg{color:#c9b3ff}
+nav button.on{background:#fff;color:#0a5a3c;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+nav button[data-t="home"].on svg{color:#b7861a}nav button[data-t="members"].on svg{color:#1f5fc9}nav button[data-t="expenses"].on svg{color:#d23b56}nav button[data-t="more"].on svg{color:#7c3aed}
+nav button[data-t="collect"]{color:#f7e3a1}
+nav button[data-t="collect"] svg{border-color:#0e7a52}
+nav button[data-t="collect"].on{color:#fff;background:none;box-shadow:none}
+nav button[data-t="collect"].on svg{background:linear-gradient(145deg,#f2cf6b,#bf8f1c);box-shadow:0 0 0 3px rgba(255,255,255,.5),0 6px 16px rgba(191,143,28,.5)}
+.nzf .u2{unicode-bidi:isolate;display:inline-block}
 </style>
 </head>
 <body>
@@ -561,7 +584,7 @@ function vHome(){
   const pct=exp?Math.min(100,Math.round(col/exp*100)):0;
   const hj=hijri();
   const hello=`<div class="bism"><div class="bt">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div><div class="bd"><span>${dL(today())}</span>${hj?`<i>✦</i><span>${esc(hj)}</span>`:''}</div></div>`;
-  if(!S.members.length)return hello+`<div class="hero welcome"><img src="${document.querySelector('header .logo').src}" alt=""><h2>Bismillah — let's begin</h2><p>Add the mohalla members to start recording monthly chanda.</p><div class="btns"><button class="btn gold" onclick="go('members');memberForm()">Add member</button><button class="btn white" onclick="importStart()">Import Excel</button></div><button class="mini" style="color:#fff;margin-top:8px" onclick="bulkForm()">or type names one by one</button></div>`+hadith();
+  if(!S.members.length)return hello+`<div class="hero welcome"><img src="${document.querySelector('header .logo').src}" alt=""><h2>Bismillah — let's begin</h2><p>Add the mohalla members to start recording monthly chanda.</p><div class="btns"><button class="btn gold" onclick="go('members');memberForm()">Add member</button><button class="btn white" onclick="importStart()">Import Excel</button></div><button class="mini" style="color:#fff;margin-top:8px" onclick="bulkForm()">or type names one by one</button></div>`;
   const R=2*Math.PI*44,off=R*(1-pct/100);
   const top=S.members.map(m=>({m,s:summary(m)})).filter(x=>x.s.mDue>=2).sort((a,b)=>b.s.bal-a.s.bal).slice(0,10);
   const rec=[...S.payments].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,6);
@@ -586,22 +609,21 @@ function vHome(){
    ${tile('عطیات','Donations · '+MN[+cm.slice(5)-1],donIn(cm),'#7c3aed',IC.gift,"go('donations')")}
    ${tile('اخراجات','Kharcha · '+MN[+cm.slice(5)-1],spent,'#0b8285',IC.exp,"go('expenses')")}
   </div>
-  <div class="qa qa2">
-   <button onclick="payForm()"><i class="q1">${IC.recv}</i><span>Chanda<small>چندہ</small></span></button>
-   <button onclick="go('donations')"><i class="q5">${IC.gift}</i><span>Donations<small>عطیات</small></span></button>
-   <button onclick="remindAll()"><i class="q3">${IC.wa}${owing?`<b>${owing}</b>`:''}</i><span>Remind<small>یاد دہانی</small></span></button>
-   <button onclick="go('members');memberForm()"><i class="q2">${IC.add}</i><span>Member<small>رکن</small></span></button>
-   <button onclick="go('assets')"><i class="q4">${IC.box}</i><span>Assets<small>اثاثے</small></span></button>
+  <div class="qa3">
+   <button onclick="payForm()" style="--c1:#bd8a17;--c2:#e9c25a"><i>${IC.recv}${left?`<b>${left}</b>`:''}</i><span>Chanda</span><small>چندہ</small></button>
+   <button onclick="go('donations')" style="--c1:#6a3fc8;--c2:#a47cf3"><i>${IC.gift}</i><span>Donations</span><small>عطیات</small></button>
+   <button onclick="remindAll()" style="--c1:#139a4f;--c2:#3ddc84"><i>${IC.wa}${owing?`<b>${owing}</b>`:''}</i><span>Remind</span><small>یاد دہانی</small></button>
+   <button onclick="go('members');memberForm()" style="--c1:#1f5fc9;--c2:#5aa2ff"><i>${IC.add}<b class="n">${S.members.length}</b></i><span>Member</span><small>رکن</small></button>
+   <button onclick="go('assets')" style="--c1:#d23b56;--c2:#ff8a9c"><i>${IC.box}</i><span>Assets</span><small>اثاثے</small></button>
   </div>
   <div class="replist">
   ${repBox('h_tips',T.length?'linear-gradient(140deg,#d23b56,#f2768a)':'linear-gradient(140deg,#0e7a52,#16a974)',em(T.length?'🔔':'✅'),'Smart reminders',T.length?`${T.length} thing${T.length>1?'s':''} need attention`:'All good, Alhamdulillah',
     T.length?T.map(([c,i,t,bt,fn])=>`<div class="tip" style="--c:${c}"><span class="ti">${i}</span><div class="grow">${t}</div><button class="btn sm" style="background:${c}" onclick="${fn}">${bt}</button></div>`).join(''):'<div class="empty">No pending tasks right now.</div>')}
-  ${repBox('h_pend','linear-gradient(140deg,#c2410c,#f08a4b)',em('⏳'),'Most pending',top.length?`${top.length} member${top.length>1?'s':''} owe 2+ months`:'Nobody owes 2+ months',
+  ${repBox('h_pend','linear-gradient(140deg,#c2410c,#f08a4b)',em('⏳'),'Most pending',top.length?`${top.length} member${top.length>1?'s owe':' owes'} 2+ months`:'Nobody owes 2+ months',
     top.length?top.map(x=>`<div class="row" onclick="memberSheet('${x.m.id}')">${av(x.m.name)}<div class="grow"><div class="t">${esc(x.m.name)}</div><div class="s">${x.s.mDue} months</div></div><div class="amt red">${rs(x.s.bal)}</div></div>`).join(''):'<div class="empty">Alhamdulillah, nobody owes 2 or more months.</div>')}
   ${repBox('h_rec','linear-gradient(140deg,#0e7a52,#16a974)',em('🧾'),'Recent payments',rec.length?`Last: ${esc((byId(rec[0].memberId)||{}).name||'—')} · ${rs(rec[0].amount)}`:'No payments yet',
     rec.length?rec.map(payRow).join(''):'<div class="empty">No payments recorded yet.</div>')}
-  </div>
-  ${hadith()}`;
+  </div>`;
 }
 function rsK(n){n=Math.round(n||0);const a=Math.abs(n),f=(x,u)=>'Rs '+(n<0?'-':'')+(+x.toFixed(1))+u;return a>=100000?f(a/100000,' lac'):a>=1000?f(a/1000,'k'):rs(n)}
 function tipsList(unpaid){const T=[];const cm=curMonth();
@@ -722,7 +744,7 @@ function vMore(){
    <p class="note">When you change the amount, the app asks whether to apply it to all members or only new ones.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 19 · Namaz time board</p>
+  <p class="note" style="text-align:center">App version 20 · Smart buttons & colourful bar</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -1121,9 +1143,10 @@ function to12(t){if(!t)return'—';let[h,m]=t.split(':').map(Number);const ap=h>
 function nzNext(){const T=nzT();const d=new Date();const now=d.getHours()*60+d.getMinutes();const isFri=d.getDay()===5;
   const L=NZ.slice(0,5).map(n=>[n[0]==='zuhr'&&isFri?'juma':n[0],T[n[0]==='zuhr'&&isFri?'juma':n[0]]]).filter(x=>x[1]);
   const f=L.find(([k,t])=>{const[h,m]=t.split(':').map(Number);return h*60+m>=now});return(f||L[0]||[''])[0]}
-function nzCard(){const T=nzT();const nx=nzNext();const isFri=new Date().getDay()===5;
+function nzLeft(k){const t=nzT()[k];if(!t)return'';const[h,m]=t.split(':').map(Number);const d=new Date();let diff=h*60+m-(d.getHours()*60+d.getMinutes());if(diff<0)diff+=1440;const H=Math.floor(diff/60),M=diff%60;return diff===0?'now':(H?H+'h ':'')+M+'m'}
+function nzCard(){const T=nzT();const nx=nzNext();const nn=NZ.find(x=>x[0]===nx);const isFri=new Date().getDay()===5;
   return `<div class="nzc">
-   <div class="nzh"><div class="grow"><b>اوقات نماز</b><span>Prayer times · Jamaat</span></div><button class="nzb" onclick="namazEdit()" aria-label="Edit times">✎</button><button class="nzb sh" onclick="namazBoard()">Share ⇪</button></div>
+   <div class="nzh"><div class="grow"><b>اوقات نماز</b><span>${nn?`Next: <b class="nxl">${nn[2]}</b> in <b class="nxl">${nzLeft(nx)}</b>`:'Prayer times · Jamaat'}</span></div><button class="nzb" onclick="namazEdit()" aria-label="Edit times">✎</button><button class="nzb sh" onclick="namazBoard()">Share ⇪</button></div>
    <div class="nzr">${NZ.slice(0,5).map(n=>{const k=n[0]==='zuhr'&&isFri?'juma':n[0];const nn=NZ.find(x=>x[0]===k);return `<div class="nzp ${k===nx?'nx':''}"><span class="u">${nn[1]}</span><b>${to12(T[k]).replace(/ (AM|PM)/,'<small>$1</small>')}</b></div>`}).join('')}</div>
    <div class="nzf"><span class="u2">نماز جمعہ</span> · <b dir="ltr">${to12(T.juma)}</b>${S.settings.namazDate?` · Updated ${dL(S.settings.namazDate)}`:''}</div>
   </div>`}
