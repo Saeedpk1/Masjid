@@ -337,6 +337,8 @@ details.more summary{font-weight:700;font-size:13.5px;color:var(--muted);cursor:
 .btn.big2{margin-top:16px;padding:15px;font-size:16px}
 .in.fixed{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--gold-soft);border-color:var(--gold)}
 .in.fixed b{font-size:18px}.in.fixed span{font-size:11.5px;color:var(--muted);text-align:right}
+table.dt td{font-size:13.5px;padding:11px 8px;cursor:pointer}table.dt tbody tr:active{background:var(--pri-soft)}
+table.dr td:nth-child(2),table.dr th:nth-child(2){text-align:left}
 </style>
 </head>
 <body>
@@ -573,12 +575,11 @@ function vMore(){
   const chanda=letterhead('Monthly Chanda Report',per)+kpis([['Expected (to date)',rs(cEx)],['Received',rs(cIn),'var(--ok)'],['Collection',pct+'%'],['Pending now',rs(pend),'var(--bad)']])+
    `<div class="scroll"><table class="rt"><thead><tr><th>Month</th><th>Expected</th><th>Received</th><th>%</th></tr></thead><tbody>${C.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}${bar(r.in,mxC,'#16a974')}</td><td>${rs(r.ex)}</td><td>${rs(r.in)}</td><td>${r.ex?Math.round(r.in/r.ex*100)+'%':'—'}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(C,r=>r.ex))}</td><td>${rs(cIn)}</td><td>${sum(C,r=>r.ex)?Math.round(cIn/sum(C,r=>r.ex)*100)+'%':'—'}</td></tr></tfoot></table></div>`+
    repFoot()+repBtns(`<button class="btn green sm" onclick="shareChandaYear()">Share in Urdu</button>`);
-  const don=letterhead('Donations Report',per)+(Y.length?kpis([['Total donations',rs(dTot),'#7c3aed'],['Count',Y.length],['Donors',new Set(Y.map(d=>d.anon?d.id:d.name)).size],['Average',rs(dTot/Y.length)]])+
-   `<h4>By purpose</h4><div class="scroll"><table class="rt"><thead><tr><th>Purpose</th><th>Count</th><th>Amount</th><th>Share</th></tr></thead><tbody>${Object.entries(grp).sort((a,b)=>b[1].v-a[1].v).map(([k,x])=>`<tr><td>${esc(k)}</td><td>${x.n}</td><td>${rs(x.v)}</td><td>${Math.round(x.v/dTot*100)}%</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${Y.length}</td><td>${rs(dTot)}</td><td>100%</td></tr></tfoot></table></div>
-   <h4>By month</h4><div class="scroll"><table class="rt"><thead><tr><th>Month</th><th>Count</th><th>Amount</th></tr></thead><tbody>${D.filter(r=>r.n).map(r=>`<tr><td>${mn(r.mo)}${bar(r.v,mxD,'#9a6cf0')}</td><td>${r.n}</td><td>${rs(r.v)}</td></tr>`).join('')}</tbody></table></div>
-   <h4>Top donors</h4><div class="scroll"><table class="rt"><thead><tr><th>Donor</th><th>Date</th><th>Purpose</th><th>Amount</th></tr></thead><tbody>${top.map(d=>`<tr><td>${esc(donName(d))}</td><td>${dL(d.date)}</td><td>${esc(donType(d))}</td><td>${rs(d.amount)}</td></tr>`).join('')}</tbody></table></div>`+
-   repFoot()+repBtns(`<button class="btn green sm" onclick="shareDonYear(false)">Share totals</button><button class="btn green sm" onclick="shareDonYear(true)">With names</button>`,`<button class="btn ghost sm" onclick="go('donations')">All ›</button>`)
-   :`<div class="empty">No donations recorded in ${y}.<br><br><button class="btn sm" onclick="donForm()">Add donation</button></div>`);
+  const Ys=[...Y].sort((a,b)=>a.date.localeCompare(b.date));
+  const don=letterhead('Donations Report',per)+(Y.length?
+   `<div class="scroll"><table class="rt dr"><thead><tr><th>#</th><th>Donor</th><th>Date</th><th>Amount</th></tr></thead><tbody>${Ys.map((d,i)=>`<tr><td>${i+1}</td><td>${esc(d.name||'—')}</td><td>${dL(d.date)}</td><td>${rs(d.amount)}</td></tr>`).join('')}</tbody><tfoot><tr><td></td><td>Total</td><td></td><td>${rs(dTot)}</td></tr></tfoot></table></div>`+
+   repFoot()+repBtns(`<button class="btn green sm" onclick="shareDonYear()">Share in Urdu</button>`,`<button class="btn ghost sm" onclick="go('donations')">All ›</button>`)
+   :`<div class="empty">No donations recorded in ${y}.</div>`);
   const inc=letterhead('Income & Expenditure Statement',per)+kpis([['Total income',rs(tI),'var(--ok)'],['Total kharcha',rs(tE),'var(--bad)'],['Net saving',rs(tI-tE)],['Cash in hand',rs(cashInHand()),'#9a6c0c']])+
    `<div class="scroll"><table class="rt"><thead><tr><th>Month</th><th>Chanda</th><th>Donations</th><th>Kharcha</th><th>Net</th></tr></thead><tbody>${I.map(r=>`<tr${r.mo>cm?' class="fut"':''}><td>${mn(r.mo)}</td><td>${rs(r.c)}</td><td>${rs(r.d)}</td><td>${rs(r.e)}</td><td class="${r.c+r.d-r.e<0?'neg':''}">${rs(r.c+r.d-r.e)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td>${rs(sum(I,r=>r.c))}</td><td>${rs(sum(I,r=>r.d))}</td><td>${rs(tE)}</td><td>${rs(tI-tE)}</td></tr></tfoot></table></div>`+
    repFoot()+repBtns(`<button class="btn green sm" onclick="shareIncomeYear()">Share in Urdu</button><button class="btn green sm" onclick="shareSummary()">This month</button>`);
@@ -603,7 +604,7 @@ function vMore(){
    <p class="note">When you change the amount, the app asks whether to apply it to all members or only new ones.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 12 · Name, mobile & date only</p>
+  <p class="note" style="text-align:center">App version 13 · Simple donations</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -940,51 +941,37 @@ const donName=d=>d.anon?'Anonymous':d.name||'Anonymous';
 const nextDNo=()=>Math.max(0,...S.donations.map(d=>+d.no||0))+1;
 V.dy=new Date().getFullYear();V.dt='all';
 function vDonations(){
-  const y=V.dy;const Y=S.donations.filter(d=>d.date.slice(0,4)==String(y));const tot=sum(Y,d=>d.amount);
-  const cm=curMonth();const mon=sum(S.donations.filter(d=>d.date.slice(0,7)===cm),d=>d.amount);
-  const byT=DTYPES.map(t=>({t,L:Y.filter(d=>d.type===t[0])})).filter(x=>x.L.length);
-  const L=Y.filter(d=>V.dt==='all'||d.type===V.dt).sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
+  const L=[...S.donations].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));const tot=sum(L,d=>d.amount);
   return `<button class="mini" style="margin:6px 0 2px;font-size:14px" onclick="go('home')">‹ Home</button>
-  <div class="hero" style="background:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.09' stroke-width='1.2'%3E%3Crect x='17' y='17' width='22' height='22'/%3E%3Crect x='17' y='17' width='22' height='22' transform='rotate(45 28 28)'/%3E%3C/g%3E%3C/svg%3E&quot;),linear-gradient(135deg,#6a3fc8,#7c3aed 50%,#9a6cf0);box-shadow:0 12px 28px rgba(124,58,237,.35)"><i style="width:60px;height:60px;border-radius:18px;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.18)">${IC.gift}</i><div class="grow"><div class="hk" style="color:#e9ddff">Donations in ${y}</div><div class="hv">${rs(tot)}</div><div class="hs" style="color:#e9ddff">${Y.length} donation${Y.length==1?'':'s'} · this month ${rs(mon)}</div></div></div>
-  <button class="btn full" style="margin-bottom:10px;padding:14px;font-size:16px;background:linear-gradient(135deg,#6a3fc8,#9a6cf0);box-shadow:0 6px 16px rgba(124,58,237,.3)" onclick="donForm()">＋ Add donation</button>
-  <div class="monthbar"><button onclick="V.dy--;render()" aria-label="Previous year">‹</button><b>${y}</b><button onclick="V.dy++;render()" aria-label="Next year">›</button></div>
-  ${byT.length?`<div class="acats">${byT.map(({t,L})=>`<button class="acat ${V.dt===t[0]?'on':''}" style="--c:${t[3]}" onclick="V.dt=V.dt==='${t[0]}'?'all':'${t[0]}';render()"><b>${t[1]}</b><span>${rs(sum(L,d=>d.amount))}</span><small>${L.length} donation${L.length>1?'s':''}</small></button>`).join('')}</div>`:''}
-  <div class="list">${L.length?L.map(d=>`<div class="row" onclick="donForm('${d.id}')">${av(d.anon?'?':d.name)}<div class="grow"><div class="t">${esc(donName(d))}</div><div class="s">#D${d.no} · ${dL(d.date)} · ${esc(donType(d))}${d.method==='online'?' · online':''}</div></div><div class="amt green">${rs(d.amount)}</div></div>`).join(''):`<div class="empty">${S.donations.length?'No donations here.':'<b>No donations yet</b><br>Record donations separately from monthly chanda — Juma box, construction, Ramadan and more.<br>Tap <b>＋ Add donation</b> above to record the first one.'}</div>`}</div>`;
+  <div class="hero" style="background:linear-gradient(135deg,#6a3fc8,#7c3aed 50%,#9a6cf0);box-shadow:0 12px 28px rgba(124,58,237,.35)"><i style="width:56px;height:56px;border-radius:18px;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.18)">${IC.gift}</i><div class="grow"><div class="hk" style="color:#e9ddff">Total donations</div><div class="hv">${rs(tot)}</div><div class="hs" style="color:#e9ddff">${L.length} donation${L.length==1?'':'s'}</div></div></div>
+  <button class="btn full" style="margin-bottom:12px;padding:14px;font-size:16px;background:linear-gradient(135deg,#6a3fc8,#9a6cf0);box-shadow:0 6px 16px rgba(124,58,237,.3)" onclick="donForm()">＋ Add donation</button>
+  ${L.length?`<div class="scroll"><table class="rt dt"><thead><tr><th>Donor</th><th>Date</th><th>Amount</th></tr></thead><tbody>${L.map(d=>`<tr onclick="donForm('${d.id}')"><td>${esc(d.name||'—')}</td><td>${dL(d.date)}</td><td>${rs(d.amount)}</td></tr>`).join('')}</tbody><tfoot><tr><td>Total</td><td></td><td>${rs(tot)}</td></tr></tfoot></table></div><p class="note" style="text-align:center">Tap a row to edit or delete.</p>`
+  :`<div class="list"><div class="empty"><b>No donations yet</b><br>Tap <b>＋ Add donation</b> above to record the first one.</div></div>`}`;
 }
 function donForm(id){
-  const ed=id?S.donations.find(x=>x.id===id):null;const cols=collectorList();
-  const d=ed||{name:'',phone:'',amount:'',date:today(),type:'general',other:'',method:'cash',by:localStorage.getItem(KEY+'_by')||cols[0]||'',note:'',anon:false};
-  const names=[...new Set([...S.members.map(m=>m.name),...S.donations.filter(x=>!x.anon).map(x=>x.name)])].filter(Boolean);
-  openSheet(ed?'Edit donation #D'+ed.no:'Add donation',`
-   <label class="f">Donor name</label><input class="in" id="dN" dir="auto" list="dNl" value="${esc(d.anon?'':d.name)}" placeholder="Name of the person" oninput="donFill()" ${d.anon?'disabled':''}><datalist id="dNl">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
-   <label style="display:flex;gap:8px;align-items:center;margin:8px 0 0;font-weight:600;font-size:14px"><input type="checkbox" id="dAn" ${d.anon?'checked':''} onchange="dN.disabled=this.checked;if(this.checked)dN.value=''"> Anonymous (name not to be shown)</label>
-   <label class="f">Mobile (optional, for WhatsApp receipt)</label><input class="in" id="dP" type="tel" inputmode="tel" value="${esc(d.phone)}" placeholder="03xx xxxxxxx">
-   <label class="f">Amount (Rs)</label><input class="in" id="dA" type="number" inputmode="numeric" value="${d.amount}" style="font-size:20px;font-weight:800" placeholder="0">
-   <div class="chips" style="margin-top:8px">${[500,1000,2000,5000,10000].map(v=>`<button type="button" class="chip" onclick="dA.value=${v}">${rs(v)}</button>`).join('')}</div>
-   <label class="f">Purpose</label><div class="chips" id="dT" style="flex-wrap:wrap">${DTYPES.map(t=>`<button type="button" class="chip ${t[0]===d.type?'on':''}" data-v="${t[0]}" onclick="pick(this);dXw.style.display=this.dataset.v==='other'?'block':'none'">${t[1]}</button>`).join('')}</div>
-   <div id="dXw" style="display:${d.type==='other'?'block':'none'}"><label class="f">Write the purpose *</label><input class="in" id="dX" dir="auto" value="${esc(d.other||'')}" placeholder="e.g. Solar panels, New fans"></div>
-   <div class="two"><div><label class="f">Date</label><input class="in" id="dD" type="date" value="${d.date}"></div><div><label class="f">Paid by</label><div class="chips" id="dM">${[['cash','Cash'],['online','Online']].map(([k,l])=>`<button type="button" class="chip ${k===d.method?'on':''}" data-v="${k}" onclick="pick(this)">${l}</button>`).join('')}</div></div></div>
-   <label class="f">Received by</label><div class="chips" id="dBc" style="flex-wrap:wrap">${cols.map(c=>`<button type="button" class="chip ur ${c===d.by?'on':''}" onclick="pick(this);dB.value=this.textContent">${esc(c)}</button>`).join('')}</div>
-   <input class="in" id="dB" dir="auto" value="${esc(d.by)}" placeholder="Or write a name">
-   <label class="f">Note (optional)</label><input class="in" id="dO" value="${esc(d.note)}">
-   <button class="btn full" style="margin-top:16px;background:linear-gradient(135deg,#6a3fc8,#9a6cf0)" onclick="saveDon('${id||''}')">${ed?'Save changes':'Save donation'}</button>
+  const ed=id?S.donations.find(x=>x.id===id):null;const d=ed||{name:'',amount:'',date:today()};
+  const names=[...new Set([...S.members.map(m=>m.name),...S.donations.map(x=>x.name)])].filter(Boolean);
+  openSheet(ed?'Edit donation':'Add donation',`
+   <div class="fl"><i style="background:#7c3aed">👤</i><div class="grow"><label class="f">Donor name *</label><input class="in" id="dN" dir="auto" list="dNl" value="${esc(d.name||'')}" placeholder="Name of the person" autocomplete="off"><datalist id="dNl">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist></div></div>
+   <div class="fl"><i style="background:#bd8a17">💰</i><div class="grow"><label class="f">Amount (Rs) *</label><input class="in" id="dA" type="number" inputmode="numeric" value="${d.amount}" style="font-size:20px;font-weight:800" placeholder="0"></div></div>
+   <div class="fl"><i style="background:#1f5fc9">📅</i><div class="grow"><label class="f">Date</label><input class="in" id="dD" type="date" value="${d.date}"></div></div>
+   <button class="btn full big2" style="background:linear-gradient(135deg,#6a3fc8,#9a6cf0)" onclick="saveDon('${id||''}')">✓ ${ed?'Save changes':'Save donation'}</button>
    ${ed?`<div class="btns" style="margin-top:8px"><button class="btn green" onclick="donReceipt('${id}')">Send receipt</button><button class="btn red" onclick="delDon('${id}')">Delete</button></div>`:''}`);
+  if(!ed)setTimeout(()=>dN.focus(),250);
 }
-function donFill(){const m=S.members.find(x=>x.name===dN.value.trim());if(m&&m.phone&&!dP.value)dP.value=m.phone}
-function saveDon(id){const a=+dA.value;const anon=dAn.checked;const name=dN.value.trim();
-  if(!anon&&!name){toast('Write the donor name or tick Anonymous');dN.focus();return}
+function saveDon(id){const a=+dA.value;const name=dN.value.trim();
+  if(!name){toast('Write the donor name');dN.focus();return}
   if(!(a>0)){toast('Enter an amount above 0');dA.focus();return}
-  const type=picked('dT')||'general';const other=type==='other'?dX.value.trim():'';if(type==='other'&&!other){toast('Write the purpose');dX.focus();return}
-  const d={name:anon?'':name,anon,phone:dP.value.trim(),amount:a,date:dD.value||today(),type,other,method:picked('dM')||'cash',by:dB.value.trim(),note:dO.value.trim()};
-  try{if(d.by)localStorage.setItem(KEY+'_by',d.by)}catch(_){}
+  const m=S.members.find(x=>x.name===name);
+  const d={name,amount:a,date:dD.value||today()};
   if(id){Object.assign(S.donations.find(x=>x.id===id),d);save();closeSheet();render();toast('Donation updated');return}
-  const n={id:uid(),no:nextDNo(),...d};S.donations.push(n);save();V.tab='donations';V.dy=+n.date.slice(0,4);render();donPrompt(n.id)}
+  S.donations.push({id:uid(),no:nextDNo(),type:'general',phone:m?m.phone:'',...d});save();closeSheet();V.tab='donations';render();toast('Donation of '+rs(a)+' saved ✓')}
 function delDon(id){const i=S.donations.findIndex(x=>x.id===id);const d=S.donations[i];S.donations.splice(i,1);save();closeSheet();render();toast('Donation deleted',()=>{S.donations.splice(i,0,d);save();render()})}
 function donText(id){const d=S.donations.find(x=>x.id===id);const st=S.settings;
   const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ',''];
   if(!d.anon&&d.name)L.push(`محترم *${d.name}* صاحب`,'');
   L.push(`*${st.nameUr||st.name}* (${st.place}) کے لیے آپ کا عطیہ *${uRs(d.amount)}* بتاریخ ${uDate(d.date)} شکریہ کے ساتھ وصول ہوگیا ہے۔`,'');
-  L.push(`🧾 رسید نمبر: ع-${d.no}`,`🎯 مد: ${donTypeUr(d)}`);
+  L.push(`🧾 رسید نمبر: ع-${d.no}`);
   if(d.method==='online')L.push('💳 ادائیگی: آن لائن');
   if(d.by)L.push(`👤 وصول کنندہ: ${d.by}`);
   L.push('','اللہ تعالیٰ آپ کے اس صدقہ جاریہ کو قبول فرمائے اور دنیا و آخرت میں بہترین اجر عطا فرمائے۔ آمین','','جزاک اللہ خیراً 🤲');
@@ -1012,13 +999,10 @@ function shareChandaYear(){const y=V.ry,st=S.settings;const ms=months(y+'-01',y+
   const tr=sum(ms,mo=>chandaIn(mo)),te=sum(ms,mo=>sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee));
   L.push('',`💚 *کل وصول شدہ چندہ: ${uRs(tr)}*`,`📌 کل متوقع: ${uRs(te)}`,`⏳ موجودہ کل بقایا جات: ${uRs(sum(S.members,m=>Math.max(0,summary(m).bal)))}`,'','جزاک اللہ خیراً 🤲');
   window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
-function shareDonYear(withNames){const y=V.ry,st=S.settings;const Y=S.donations.filter(d=>d.date.slice(0,4)==String(y));
+function shareDonYear(){const y=V.ry,st=S.settings;const Y=S.donations.filter(d=>d.date.slice(0,4)==String(y)).sort((a,b)=>a.date.localeCompare(b.date));
   const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,`*عطیات کی رپورٹ — ${y}* 🎁`,''];
-  DTYPES.forEach(t=>{const X=Y.filter(d=>d.type===t[0]);if(!X.length)return;
-    if(t[0]==='other'){const g={};X.forEach(d=>{const k=d.other||'دیگر';g[k]=(g[k]||0)+(+d.amount)});Object.entries(g).forEach(([k,v])=>L.push(`▪️ ${k}: ${uRs(v)}`))}
-    else L.push(`▪️ ${t[2]}: ${uRs(sum(X,d=>d.amount))}`)});
-  if(withNames&&Y.length){L.push('','*عطیہ دہندگان:*');[...Y].sort((a,b)=>b.amount-a.amount).forEach(d=>L.push(`    • ${d.anon||!d.name?'ایک صاحب خیر':d.name}: ${uRs(d.amount)}`))}
-  L.push('',`💰 *کل عطیات: ${uRs(sum(Y,d=>d.amount))}*`,`🧾 تعداد: ${Y.length}`,'','اللہ تعالیٰ تمام عطیہ دہندگان کو جزائے خیر عطا فرمائے۔ آمین 🤲');
+  Y.forEach((d,i)=>L.push(`${i+1}. ${d.name||'ایک صاحب خیر'} — ${uDate(d.date)} — ${uRs(d.amount)}`));
+  L.push('',`💰 *کل عطیات: ${uRs(sum(Y,d=>d.amount))}*`,'','اللہ تعالیٰ تمام عطیہ دہندگان کو جزائے خیر عطا فرمائے۔ آمین 🤲');
   window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
 function shareIncomeYear(){const y=V.ry,st=S.settings;const ms=months(y+'-01',y+'-12');
   const c=sum(ms,chandaIn),d=sum(ms,donIn),e=sum(ms,spentIn);
