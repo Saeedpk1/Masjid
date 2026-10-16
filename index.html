@@ -420,6 +420,32 @@ header .ur{font-size:17px;line-height:1.5;font-weight:700}
 .chip.ur{font-size:15px;line-height:1.5;padding:5px 14px}
 .ursel{font-size:16px;font-weight:700}
 table.at td:first-child,table.dr.at td:nth-child(2),table.et td:nth-child(2){font-size:14.5px;font-weight:600;line-height:1.6}
+
+/* namaz board */
+.nzc{background:linear-gradient(150deg,#fbf3dc,var(--card) 65%);border:1.5px solid var(--gold);border-radius:20px;padding:12px;margin-bottom:12px;box-shadow:var(--shadow)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .nzc{background:linear-gradient(150deg,#33290f,var(--card) 65%)}}
+.nzh{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.nzh .grow{flex:1;min-width:0}
+.nzh b{display:block;font-family:var(--ur);font-size:19px;line-height:1.4;color:#0b6a46}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .nzh b{color:var(--gold)}}
+.nzh span{font-size:11.5px;color:var(--muted);font-weight:700}
+.nzb{border:0;border-radius:12px;height:36px;min-width:36px;padding:0 12px;font-weight:800;background:var(--pri-soft);color:var(--pri);font-size:15px}
+.nzb.sh{background:linear-gradient(135deg,#1aa856,#25d366);color:#fff;font-size:13px}
+.nzr{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.nzp{text-align:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 2px 7px}
+.nzp .u{display:block;font-family:var(--ur);font-size:15px;font-weight:700;line-height:1.5;color:var(--pri)}
+.nzp b{display:block;font-size:14px;font-weight:800;white-space:nowrap}
+.nzp b small{font-size:9.5px;margin-left:2px;color:var(--muted)}
+.nzp.nx{background:linear-gradient(140deg,#0e7a52,#18a571);border-color:transparent;box-shadow:0 6px 14px rgba(14,122,82,.35)}
+.nzp.nx .u{color:#f7e3a1}.nzp.nx b,.nzp.nx b small{color:#fff}
+.nzf{text-align:center;font-size:12.5px;color:var(--muted);margin-top:8px;font-weight:600}
+.nzf b{color:var(--text)}
+.nze{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.nze .grow{flex:1}.nze b.u{display:block;font-family:var(--ur);font-size:19px;line-height:1.4;color:var(--pri)}.nze span{font-size:12px;color:var(--muted);font-weight:700}
+.nze input{width:150px;font-size:17px;font-weight:800;text-align:center}
+.nzimg{border-radius:16px;overflow:hidden;background:var(--na);min-height:120px;margin-bottom:4px}
+.nzimg img{display:block;width:100%;height:auto}
+.nzf .u2{font-family:var(--ur);font-weight:700;color:var(--pri);font-size:14px}
 </style>
 </head>
 <body>
@@ -553,6 +579,7 @@ function vHome(){
    <svg class="mh-sky" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V50H300V60Z M108 50V37Q108 15 150 7Q192 15 192 37V50Z M149 0H151V8H149Z M58 50V41Q58 31 79 27Q100 31 100 41V50Z M200 50V41Q200 31 221 27Q242 31 242 41V50Z M28 50V16H38V50Z M27 16L33 3L39 16Z M262 50V16H272V50Z M261 16L267 3L273 16Z"/></svg>
   </div>
   <div class="orn"><span></span><i>✦</i><span></span></div>
+  ${nzCard()}
   <div class="lg4">
    ${tile('بقایا','Pending dues',pend,'#d23b56',IC.hour,"V.mf='dues';go('members')")}
    ${tile('خزانہ','Cash in hand',cash,'#b7861a',IC.bank,'')}
@@ -695,7 +722,7 @@ function vMore(){
    <p class="note">When you change the amount, the app asks whether to apply it to all members or only new ones.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 18 · Clear Urdu</p>
+  <p class="note" style="text-align:center">App version 19 · Namaz time board</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -1086,6 +1113,69 @@ function shareIncomeYear(){const y=V.ry,st=S.settings;const ms=months(y+'-01',y+
   {const g={};ex.forEach(x=>{const k=expName(x);g[k]=(g[k]||0)+(+x.amount||0)});Object.entries(g).forEach(([k,v])=>L.push(`    • ${k}: ${uRs(v)}`))}
   L.push('',`📈 سال کی بچت: ${uRs(c+d-e)}`,`💰 *موجودہ رقم (خزانہ): ${uRs(cashInHand())}*`,'','جزاک اللہ خیراً 🤲');
   window.open('https://wa.me/?text='+encodeURIComponent(L.join('\n')),'_blank')}
+
+/* ---------- Namaz times board ---------- */
+const NZ=[['fajr','فجر','Fajr','05:15'],['zuhr','ظہر','Zuhr','13:30'],['asr','عصر','Asr','16:30'],['maghrib','مغرب','Maghrib','17:45'],['isha','عشاء','Isha','19:30'],['juma','جمعہ','Jumu\'ah','13:30']];
+const nzT=()=>({...Object.fromEntries(NZ.map(n=>[n[0],n[3]])),...(S.settings.namaz||{})});
+function to12(t){if(!t)return'—';let[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+String(m).padStart(2,'0')+' '+ap}
+function nzNext(){const T=nzT();const d=new Date();const now=d.getHours()*60+d.getMinutes();const isFri=d.getDay()===5;
+  const L=NZ.slice(0,5).map(n=>[n[0]==='zuhr'&&isFri?'juma':n[0],T[n[0]==='zuhr'&&isFri?'juma':n[0]]]).filter(x=>x[1]);
+  const f=L.find(([k,t])=>{const[h,m]=t.split(':').map(Number);return h*60+m>=now});return(f||L[0]||[''])[0]}
+function nzCard(){const T=nzT();const nx=nzNext();const isFri=new Date().getDay()===5;
+  return `<div class="nzc">
+   <div class="nzh"><div class="grow"><b>اوقات نماز</b><span>Prayer times · Jamaat</span></div><button class="nzb" onclick="namazEdit()" aria-label="Edit times">✎</button><button class="nzb sh" onclick="namazBoard()">Share ⇪</button></div>
+   <div class="nzr">${NZ.slice(0,5).map(n=>{const k=n[0]==='zuhr'&&isFri?'juma':n[0];const nn=NZ.find(x=>x[0]===k);return `<div class="nzp ${k===nx?'nx':''}"><span class="u">${nn[1]}</span><b>${to12(T[k]).replace(/ (AM|PM)/,'<small>$1</small>')}</b></div>`}).join('')}</div>
+   <div class="nzf"><span class="u2">نماز جمعہ</span> · <b dir="ltr">${to12(T.juma)}</b>${S.settings.namazDate?` · Updated ${dL(S.settings.namazDate)}`:''}</div>
+  </div>`}
+function namazEdit(){const T=nzT();
+  openSheet('Edit namaz times',`<p class="note" style="margin-top:-6px">Set the jamaat time for each namaz, then save.</p>
+   ${NZ.map(n=>`<div class="nze"><div class="grow"><b class="u">${n[1]}</b><span>${n[2]}</span></div><input class="in" type="time" id="nz_${n[0]}" value="${T[n[0]]||''}"></div>`).join('')}
+   <button class="btn full big2" onclick="namazSave()">✓ Save times</button>
+   <button class="btn ghost full" style="margin-top:8px" onclick="namazSave(true)">Save & share as image</button>`)}
+function namazSave(share){const o={};NZ.forEach(n=>{o[n[0]]=document.getElementById('nz_'+n[0]).value});
+  S.settings.namaz=o;S.settings.namazDate=today();save();render();toast('Namaz times saved ✓');if(share)namazBoard();else closeSheet()}
+async function boardCanvas(){
+  const T=nzT(),st=S.settings,W=1080,H=1520,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  try{await Promise.all(['700 60px "Noto Naskh Arabic"','800 40px Manrope','700 40px Amiri'].map(f=>document.fonts.load(f)))}catch(_){}
+  const UR='"Noto Naskh Arabic","Noto Nastaliq Urdu",serif',EN='Manrope,system-ui,sans-serif';
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0f7a52');g.addColorStop(.5,'#0b6243');g.addColorStop(1,'#07422d');x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.save();x.strokeStyle='rgba(255,255,255,.06)';x.lineWidth=2;for(let yy=0;yy<H;yy+=90)for(let xx=0;xx<W;xx+=90){x.save();x.translate(xx+45,yy+45);x.strokeRect(-20,-20,40,40);x.rotate(Math.PI/4);x.strokeRect(-20,-20,40,40);x.restore()}x.restore();
+  const rr=(X,Y,w,h,r)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()};
+  x.strokeStyle='#e5c26a';x.lineWidth=8;rr(28,28,W-56,H-56,36);x.stroke();x.lineWidth=2;x.strokeStyle='rgba(229,194,106,.5)';rr(48,48,W-96,H-96,26);x.stroke();
+  const logo=document.querySelector('header .logo');
+  if(logo){const im=new Image();im.src=logo.src;await new Promise(r=>{im.onload=r;im.onerror=r;if(im.complete)r()});
+    x.save();x.beginPath();x.arc(W/2,165,92,0,Math.PI*2);x.closePath();x.fillStyle='#fff';x.fill();x.clip();try{x.drawImage(im,W/2-92,73,184,184)}catch(_){}x.restore();
+    x.beginPath();x.arc(W/2,165,96,0,Math.PI*2);x.strokeStyle='#e5c26a';x.lineWidth=7;x.stroke()}
+  x.textAlign='center';x.direction='rtl';x.fillStyle='#f7e3a1';x.font='700 64px '+UR;x.fillText(st.nameUr||'',W/2,340);
+  x.direction='ltr';x.fillStyle='#fff';x.font='800 42px '+EN;x.fillText((st.name||'').toUpperCase(),W/2,405);
+  x.fillStyle='#cdeedd';x.font='600 30px '+EN;x.fillText(st.place||'',W/2,450);
+  const bg=x.createLinearGradient(140,0,W-140,0);bg.addColorStop(0,'#c9962a');bg.addColorStop(.5,'#f2d27a');bg.addColorStop(1,'#c9962a');x.fillStyle=bg;rr(140,485,W-280,96,48);x.fill();
+  x.fillStyle='#0a4a32';x.direction='rtl';x.font='700 50px '+UR;x.fillText('اوقات نماز',W/2+120,550);x.direction='ltr';x.font='800 32px '+EN;x.fillText('PRAYER TIMES',W/2-150,546);
+  x.font='700 24px '+EN;x.fillStyle='#e5c26a';x.fillText('JAMAAT',W/2,630);
+  const nx=nzNext();let y=655;
+  NZ.forEach((n,i)=>{const hi=n[0]===nx;x.fillStyle=hi?'rgba(242,207,107,.28)':(i%2?'rgba(255,255,255,.10)':'rgba(255,255,255,.05)');rr(90,y,W-180,104,22);x.fill();
+    if(n[0]==='juma'){x.strokeStyle='rgba(229,194,106,.7)';x.lineWidth=3;rr(90,y,W-180,104,22);x.stroke()}
+    x.textAlign='left';x.direction='ltr';x.fillStyle='#cdeedd';x.font='700 36px '+EN;x.fillText(n[2],130,y+66);
+    x.textAlign='center';x.fillStyle='#fff';x.font='800 56px '+EN;x.fillText(to12(T[n[0]]),W/2,y+72);
+    x.textAlign='right';x.direction='rtl';x.fillStyle='#f7e3a1';x.font='700 50px '+UR;x.fillText(n[1],W-130,y+70);x.direction='ltr';
+    y+=116});
+  x.textAlign='center';x.fillStyle='#cdeedd';x.font='600 28px '+EN;x.fillText('Effective from '+dL(st.namazDate||today()),W/2,H-100);
+  x.fillStyle='#e5c26a';x.font='700 30px '+EN;x.fillText('✦  ✦  ✦',W/2,H-62);
+  return c}
+async function namazBoard(){openSheet('Namaz time board',`<div class="nzimg" id="nzImg"><div class="empty">Preparing image…</div></div>
+   <button class="btn green full big2" onclick="namazShare()">Share image on WhatsApp</button>
+   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="namazDownload()">Download JPEG</button><button class="btn ghost" onclick="namazText()">Send as text</button></div>
+   <button class="btn ghost full" style="margin-top:8px" onclick="namazEdit()">✎ Edit times</button>`);
+  const c=await boardCanvas();const el=document.getElementById('nzImg');if(el)el.innerHTML=`<img src="${c.toDataURL('image/jpeg',.9)}" alt="Namaz time board">`}
+const boardBlob=async()=>{const c=await boardCanvas();return new Promise(r=>c.toBlob(r,'image/jpeg',.92))};
+async function namazShare(){const b=await boardBlob();const f=new File([b],'namaz-times.jpg',{type:'image/jpeg'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Namaz times',text:'اوقات نماز — '+(S.settings.nameUr||S.settings.name)});return}catch(e){if(e&&e.name==='AbortError')return}}
+  dl('namaz-times.jpg',b,'image/jpeg');toast('Image saved — attach it in WhatsApp')}
+async function namazDownload(){dl('namaz-times.jpg',await boardBlob(),'image/jpeg');toast('Image downloaded')}
+function namazText(){const T=nzT(),st=S.settings;
+  const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,'*اوقات نماز (جماعت)* 🕌',''];
+  NZ.forEach(n=>L.push(`▪️ ${n[1]}: *${to12(T[n[0]])}*`));
+  L.push('',`از تاریخ ${uDate(st.namazDate||today())}`,'','جزاک اللہ خیراً 🤲');wa('',L.join('\n'))}
 
 /* ---------- Excel import ---------- */
 const IF=[['name','Name *',/^(member\s*)?name$|^naam|^full\s*name|^member$/i],['father','Father name',/father|walid|s\s*\/\s*o|f\.?\s*name/i],['house','House / street',/house|address|mohall|street|ghar|area|location/i],['phone','Mobile number',/phone|mobile|cell|contact|whats|number|no\.?$/i],['fee','Monthly amount',/month|amount|fee|chanda/i],['arrears','Old dues',/old|arrear|previous|baqaya|pending|due/i]];
