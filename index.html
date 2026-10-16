@@ -277,6 +277,43 @@ table.rt td.neg{color:var(--bad)}
  body[data-print] table.rt th{background:#0e7a52!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
  body[data-print] .sig{display:flex;justify-content:space-between;gap:20px;margin-top:50px}body[data-print] .sig div{flex:1;border-top:1px solid #333;padding-top:6px;text-align:center;font-size:12px}
  body[data-print] .mbar{display:none}body[data-print] .wrap{max-width:none}}
+
+/* compact header (all pages) */
+header{display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:center;text-align:left;padding:12px 16px 30px}
+header .logo{grid-row:1/4;width:62px;height:62px;margin:0;border-width:2px;box-shadow:0 0 0 4px rgba(229,194,106,.25),0 4px 12px rgba(0,0,0,.3)}
+header .ur{font-size:16px;line-height:1.7;text-align:left}
+header h1{font-size:15px;letter-spacing:1px}
+header .place{font-size:11.5px;margin-top:0}
+header::after{bottom:20px}
+header svg.arch{height:20px}
+/* compact home */
+.hello{margin:2px 2px 8px}.hello .hi{font-size:15px}.hello .s{font-size:12px}
+.hijri{font-size:10.5px;padding:3px 8px}
+.hero.hc{display:block;padding:14px;border-radius:22px;margin-bottom:10px}
+.hc .htop{display:flex;align-items:center;gap:12px}
+.hc .ring{width:72px;height:72px}
+.hc .ring .pc{font-size:24px}
+.hc .hk{font-size:12px}.hc .hv{font-size:24px}.hc .hs{font-size:11.5px}
+.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px;position:relative;z-index:1}
+.hgrid div{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:6px 7px;cursor:pointer;min-width:0}
+.hgrid small{display:block;font-size:10.5px;color:#cdeedd;font-weight:700}
+.hgrid b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qa.qa2{gap:7px;margin-bottom:10px}
+.qa2 button{flex-direction:row;justify-content:flex-start;padding:8px;gap:8px;border-radius:14px;font-size:12.5px;text-align:left}
+.qa2 i{width:34px;height:34px;border-radius:11px;flex:none}
+.qa2 i svg{width:19px;height:19px}
+.qa2 i b{top:-5px;right:-6px;min-width:17px;height:17px;font-size:10px}
+.qa2 span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.replist .repin .card{box-shadow:none;border:0;padding:0;margin:0}
+.replist .repin .row:first-child{padding-top:0}
+.replist .repin>.tip:first-child{border-top:0;padding-top:0}
+details.rep2 .ri{width:38px;height:38px;border-radius:12px}
+details.rep2>summary{padding:10px 12px}
+details.rep2 summary b{font-size:14px}details.rep2 summary span{font-size:12px}
+.chev{width:28px;height:28px}.chev::after{left:9.5px;top:7.5px}
+.hadith.hsm{padding:14px 14px 10px;margin-top:4px}
+.hadith.hsm p{font-size:13px;margin:2px 0 4px}
+.hadith.hsm .star{width:24px;height:24px;top:-12px;font-size:12px}
 </style>
 </head>
 <body>
@@ -394,32 +431,42 @@ function vHome(){
   const R=2*Math.PI*44,off=R*(1-pct/100);
   const top=S.members.map(m=>({m,s:summary(m)})).filter(x=>x.s.mDue>=2).sort((a,b)=>b.s.bal-a.s.bal).slice(0,10);
   const rec=[...S.payments].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,6);
+  const T=tipsList(act.length-paidCnt);const mn=MN[+cm.slice(5)-1];
+  const em=e=>`<span style="font-size:20px">${e}</span>`;
   return hello+`
-  <div class="hero">
-   <svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="trk"/><circle cx="50" cy="50" r="44" class="val" stroke-dasharray="${R}" stroke-dashoffset="${off}"/><text x="50" y="49" text-anchor="middle" class="pc">${pct}%</text><text x="50" y="64" text-anchor="middle" class="pl">collected</text></svg>
-   <div class="grow"><div class="hk">${mL(cm)} chanda</div><div class="hv">${rs(col)}</div><div class="hs">of ${rs(exp)} expected</div><div class="hb"><span>✓ ${paidCnt} paid</span><span>⏳ ${act.length-paidCnt} remaining</span></div></div>
+  <div class="hero hc">
+   <div class="htop">
+    <svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="trk"/><circle cx="50" cy="50" r="44" class="val" stroke-dasharray="${R}" stroke-dashoffset="${off}"/><text x="50" y="57" text-anchor="middle" class="pc">${pct}%</text></svg>
+    <div class="grow"><div class="hk">${mL(cm)} chanda</div><div class="hv">${rs(col)}</div><div class="hs">of ${rs(exp)} · ✓ ${paidCnt} paid · ⏳ ${act.length-paidCnt} left</div></div>
+   </div>
+   <div class="hgrid">
+    <div onclick="V.mf='dues';go('members')"><small>Pending</small><b>${rsK(pend)}</b></div>
+    <div><small>Cash</small><b>${rsK(cash)}</b></div>
+    <div onclick="go('donations')"><small>Donations</small><b>${rsK(donIn(cm))}</b></div>
+    <div onclick="go('expenses')"><small>Kharcha</small><b>${rsK(spent)}</b></div>
+   </div>
   </div>
-  <div class="qa">
-   <button onclick="payForm()"><i class="q1">${IC.recv}</i>Monthly chanda</button>
-   <button onclick="donForm()"><i class="q5">${IC.gift}</i>Donation</button>
-   <button onclick="remindAll()"><i class="q3">${IC.wa}${owing?`<b>${owing}</b>`:''}</i>Reminders</button>
-   <button onclick="go('members');memberForm()"><i class="q2">${IC.add}</i>Add member</button>
-   <button onclick="go('donations')"><i class="q6">${IC.chart}</i>Donations list</button>
-   <button onclick="go('assets')"><i class="q4">${IC.box}</i>Assets</button>
+  <div class="qa qa2">
+   <button onclick="payForm()"><i class="q1">${IC.recv}</i><span>Chanda</span></button>
+   <button onclick="donForm()"><i class="q5">${IC.gift}</i><span>Donation</span></button>
+   <button onclick="remindAll()"><i class="q3">${IC.wa}${owing?`<b>${owing}</b>`:''}</i><span>Remind</span></button>
+   <button onclick="go('members');memberForm()"><i class="q2">${IC.add}</i><span>Member</span></button>
+   <button onclick="go('donations')"><i class="q6">${IC.chart}</i><span>Donations</span></button>
+   <button onclick="go('assets')"><i class="q4">${IC.box}</i><span>Assets</span></button>
   </div>
-  <div class="stats">
-   <div class="stat c-rose"><div class="k">Total pending</div><div class="v">${rs(pend)}</div><div class="note">${owing} ${owing==1?'member owes':'members owe'}</div></div>
-   <div class="stat c-gold"><div class="k">Cash in hand</div><div class="v">${rs(cash)}</div><div class="note">incl. donations</div></div>
-   <div class="stat c-blue" style="cursor:pointer" onclick="go('donations')"><div class="k">Donations in ${MN[+cm.slice(5)-1]}</div><div class="v">${rs(donIn(cm))}</div><div class="note">separate from chanda</div></div>
-   <div class="stat c-purple"><div class="k">Spent in ${MN[+cm.slice(5)-1]}</div><div class="v">${rs(spent)}</div><div class="note">masjid kharcha</div></div>
+  <div class="replist">
+  ${repBox('h_tips',T.length?'linear-gradient(140deg,#d23b56,#f2768a)':'linear-gradient(140deg,#0e7a52,#16a974)',em(T.length?'🔔':'✅'),'Smart reminders',T.length?`${T.length} thing${T.length>1?'s':''} need attention`:'All good, Alhamdulillah',
+    T.length?T.map(([c,i,t,bt,fn])=>`<div class="tip" style="--c:${c}"><span class="ti">${i}</span><div class="grow">${t}</div><button class="btn sm" style="background:${c}" onclick="${fn}">${bt}</button></div>`).join(''):'<div class="empty">No pending tasks right now.</div>')}
+  ${repBox('h_pend','linear-gradient(140deg,#c2410c,#f08a4b)',em('⏳'),'Most pending',top.length?`${top.length} member${top.length>1?'s':''} owe 2+ months`:'Nobody owes 2+ months',
+    top.length?top.map(x=>`<div class="row" onclick="memberSheet('${x.m.id}')">${av(x.m.name)}<div class="grow"><div class="t">${esc(x.m.name)}</div><div class="s">${x.s.mDue} months · ${esc(x.m.house||'')}</div></div><div class="amt red">${rs(x.s.bal)}</div></div>`).join(''):'<div class="empty">Alhamdulillah, nobody owes 2 or more months.</div>')}
+  ${repBox('h_rec','linear-gradient(140deg,#0e7a52,#16a974)',em('🧾'),'Recent payments',rec.length?`Last: ${esc((byId(rec[0].memberId)||{}).name||'—')} · ${rs(rec[0].amount)}`:'No payments yet',
+    rec.length?rec.map(payRow).join(''):'<div class="empty">No payments recorded yet.</div>')}
+  ${repBox('h_chart','linear-gradient(140deg,#1f5fc9,#4a93f2)',em('📊'),'Last 6 months','Collection chart',chart6())}
   </div>
-  ${smartTips(act.length-paidCnt)}
-  ${chart6()}
-  ${hadith()}
-  <details class="box" open><summary>Most pending (2+ months)<span class="pill due">${top.length}</span></summary><div class="boxin">${top.length?top.map(x=>`<div class="row" onclick="memberSheet('${x.m.id}')">${av(x.m.name)}<div class="grow"><div class="t">${esc(x.m.name)}</div><div class="s">${x.s.mDue} months · ${esc(x.m.house||'')}</div></div><div class="amt red">${rs(x.s.bal)}</div></div>`).join(''):'<div class="empty">Alhamdulillah, nobody owes 2 or more months.</div>'}</div></details>
-  <details class="box" open><summary>Recent payments</summary><div class="boxin">${rec.length?rec.map(payRow).join(''):'<div class="empty">No payments recorded yet.</div>'}</div></details>`;
+  ${hadith()}`;
 }
-function smartTips(unpaid){const T=[];const cm=curMonth();
+function rsK(n){n=Math.round(n||0);const a=Math.abs(n),f=(x,u)=>'Rs '+(n<0?'-':'')+(+x.toFixed(1))+u;return a>=100000?f(a/100000,' lac'):a>=10000?f(a/1000,'k'):rs(n)}
+function tipsList(unpaid){const T=[];const cm=curMonth();
   if(unpaid>0)T.push(['#d23b56','⏳',`${unpaid} member${unpaid>1?'s have':' has'} not paid for ${MN[+cm.slice(5)-1]} yet`,'Collect',"V.cm=curMonth();V.cf='unpaid';go('collect')"]);
   const late=S.members.filter(m=>summary(m).mDue>=3).length;
   if(late)T.push(['#1aa856','💬',`${late} member${late>1?'s owe':' owes'} 3 or more months`,'Remind','remindAll()']);
@@ -427,8 +474,7 @@ function smartTips(unpaid){const T=[];const cm=curMonth();
   if(S.members.length&&(days===null||days>=30))T.push(['#bd8a17','💾',days===null?'No backup yet — save your records':'Last backup was '+days+' days ago','Backup','backup()']);
   const rep=S.assets.filter(a=>a.cond==='repair'||a.cond==='bad').length;
   if(rep)T.push(['#1f5fc9','🔧',`${rep} asset${rep>1?'s need':' needs'} repair`,'View',"V.af='all';go('assets')"]);
-  if(!T.length)return `<div class="tips ok"><span>✅</span><div class="grow"><b>All good, Alhamdulillah</b><div class="s">No pending tasks right now.</div></div></div>`;
-  return `<div class="card tipsc"><div class="ct"><b>Smart reminders</b></div>${T.map(([c,i,t,bt,fn])=>`<div class="tip" style="--c:${c}"><span class="ti">${i}</span><div class="grow">${t}</div><button class="btn sm" style="background:${c}" onclick="${fn}">${bt}</button></div>`).join('')}</div>`}
+  return T}
 function chart6(){
   const ms=[];for(let i=5;i>=0;i--)ms.push(addM(curMonth(),-i));
   const D=ms.map(mo=>({mo,ex:sum(S.members.filter(m=>activeIn(m,mo)),m=>m.fee),in:sum(S.payments.filter(p=>p.date.slice(0,7)===mo),p=>p.amount)}));
@@ -437,7 +483,7 @@ function chart6(){
     return `<rect x="${x}" y="${110-he}" width="${bw}" height="${he}" rx="7" class="cex"/><rect x="${x+5}" y="${110-hi}" width="${bw-10}" height="${hi}" rx="5" class="cin"/><text x="${x+bw/2}" y="125" text-anchor="middle" class="cl">${MN[+d.mo.slice(5)-1]}</text>${d.in?`<text x="${x+bw/2}" y="${Math.max(10,104-hi)}" text-anchor="middle" class="cv">${d.in>=1000?(d.in/1000).toFixed(d.in%1000?1:0)+'k':d.in}</text>`:''}`}).join('');
   return `<div class="card chart"><div class="ct"><b>Last 6 months</b><span><i class="lg lgi"></i>Received <i class="lg lge"></i>Expected</span></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Collections for the last 6 months">${bars}</svg></div>`;
 }
-function hadith(){return `<div class="hadith"><div class="star">✦</div><p>“Whoever builds a masjid for the sake of Allah, Allah will build for him a house like it in Paradise.”</p><span>Sahih al-Bukhari & Sahih Muslim</span></div>`}
+function hadith(){return `<div class="hadith hsm"><div class="star">✦</div><p>“Whoever builds a masjid for the sake of Allah, Allah will build for him a house like it in Paradise.”</p><span>Sahih al-Bukhari & Sahih Muslim</span></div>`}
 function remindAll(){
   const L=S.members.map(m=>({m,s:summary(m)})).filter(x=>x.s.bal>0).sort((a,b)=>b.s.bal-a.s.bal);
   openSheet('Send reminders',L.length?`<p class="note" style="margin-top:-6px">Tap WhatsApp next to each name to send their pending amount.</p><div class="list">${L.map(({m,s})=>`<div class="row">${av(m.name)}<div class="grow"><div class="t">${esc(m.name)}</div><div class="s">${s.mDue} month${s.mDue>1?'s':''}${m.phone?'':' · no number'}</div></div><div class="amt red">${rs(s.bal)}</div><button class="btn green sm" onclick="remind('${m.id}')">WhatsApp</button></div>`).join('')}</div>`:'<div class="empty">Alhamdulillah, nobody has pending chanda.</div>');
@@ -534,7 +580,7 @@ function vMore(){
    <p class="note">Changing the default amount only applies to members you add later.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 8 · Professional reports</p>
+  <p class="note" style="text-align:center">App version 9 · Compact home</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
