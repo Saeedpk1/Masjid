@@ -744,7 +744,7 @@ function vMore(){
    <p class="note">When you change the amount, the app asks whether to apply it to all members or only new ones.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 20 · Smart buttons & colourful bar</p>
+  <p class="note" style="text-align:center">App version 21 · JPEG member statement</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -767,7 +767,7 @@ function memberSheet(id){
    <div class="note" style="margin:-8px 0 12px">${m.father?'s/o '+esc(m.father)+' · ':''}${esc(m.house||'')}${m.phone?' · '+esc(m.phone):''}<br>Rs ${+m.fee}/month since ${mL(m.start)}${m.end?' · left after '+mL(m.end):''}${pu?' · paid up to '+mL(pu):''}</div>
    <div class="sum3"><div><small>Total due</small><b>${rs(s.due)}</b></div><div><small>Paid</small><b>${rs(s.paid)}</b></div><div class="${s.bal>0?'owes':''}"><small>${s.bal<0?'Advance':'Balance'}</small><b>${rs(Math.abs(s.bal))}</b></div></div>
    <div class="btns"><button class="btn" onclick="payForm('${id}')">Receive payment</button></div>
-   <div class="btns" style="margin-top:8px">${s.bal>0?`<button class="btn green" onclick="remind('${id}')">WhatsApp reminder</button>`:''}${m.phone?`<a class="btn ghost" style="text-align:center;text-decoration:none" href="tel:${esc(m.phone)}">Call</a>`:''}<button class="btn ghost" onclick="statement('${id}')">Statement</button><button class="btn ghost" onclick="memberForm('${id}')">Edit</button></div>
+   <div class="btns" style="margin-top:8px">${s.bal>0?`<button class="btn green" onclick="remind('${id}')">WhatsApp reminder</button>`:''}${m.phone?`<a class="btn ghost" style="text-align:center;text-decoration:none" href="tel:${esc(m.phone)}">Call</a>`:''}<button class="btn ghost" onclick="statementSheet('${id}')">Statement</button><button class="btn ghost" onclick="memberForm('${id}')">Edit</button></div>
    <div class="monthbar" style="margin-top:14px"><button onclick="V.gy--;memberSheet('${id}')" aria-label="Previous year">‹</button><b>${y}</b><button onclick="V.gy++;memberSheet('${id}')" aria-label="Next year">›</button></div>
    <div class="grid12">${grid}</div>
    ${+m.arrears?`<p class="note">Includes old dues from before the app: ${rs(m.arrears)}</p>`:''}
@@ -1199,6 +1199,100 @@ function namazText(){const T=nzT(),st=S.settings;
   const L=['السلام علیکم ورحمۃ اللہ وبرکاتہ','',`*${st.nameUr||st.name}* (${st.place})`,'*اوقات نماز (جماعت)* 🕌',''];
   NZ.forEach(n=>L.push(`▪️ ${n[1]}: *${to12(T[n[0]])}*`));
   L.push('',`از تاریخ ${uDate(st.namazDate||today())}`,'','جزاک اللہ خیراً 🤲');wa('',L.join('\n'))}
+
+/* ---------- Member statement (JPEG) ---------- */
+async function shareImg(blob,fname,text){const f=new File([blob],fname,{type:'image/jpeg'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:fname,text});return}catch(e){if(e&&e.name==='AbortError')return}}
+  dl(fname,blob,'image/jpeg');toast('Image saved — attach it in WhatsApp')}
+function stmtData(id,y){const m=byId(id);const fee=+m.fee||0,arr=+m.arrears||0,paidAll=paidBy(m.id);const cm=curMonth();
+  const rows=months(y+'-01',y+'-12').filter(mo=>activeIn(m,mo)&&(mo<=cm||mStatus(m,mo)==='paid'||mStatus(m,mo)==='part')).map(mo=>{
+    const i=months(m.start,mo).length-1;const cov=Math.max(0,Math.min(fee,paidAll-arr-i*fee));const st=mStatus(m,mo);
+    return{mo,due:fee,paid:cov,st:mo>cm&&st==='paid'?'adv':st}});
+  const P=S.payments.filter(p=>p.memberId===id&&p.date.slice(0,4)==String(y)).sort((a,b)=>(a.date+a.id).localeCompare(b.date+b.id));
+  return{m,rows,P,s:summary(m)}}
+async function stmtCanvas(id,y){
+  const{m,rows,P,s}=stmtData(id,y);const st=S.settings;
+  try{await Promise.all(['700 40px "Noto Naskh Arabic"','800 40px Manrope'].map(f=>document.fonts.load(f)))}catch(_){}
+  const UR='"Noto Naskh Arabic","Noto Nastaliq Urdu",serif',EN='Manrope,"Noto Naskh Arabic",system-ui,sans-serif';
+  const W=1080,RH=62,PH=56;const H=1010+rows.length*RH+(P.length?120+P.length*PH:0)+290;
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const rr=(X,Y,w,h,r)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()};
+  const T=(t,X,Y,font,col,al,dir)=>{x.font=font;x.fillStyle=col;x.textAlign=al||'left';x.direction=dir||'ltr';x.fillText(t,X,Y)};
+  const isUr=t=>/[\u0600-\u06FF]/.test(t||'');
+  // paper
+  x.fillStyle='#fbfaf5';x.fillRect(0,0,W,H);
+  // header band
+  const g=x.createLinearGradient(0,0,W,0);g.addColorStop(0,'#084a32');g.addColorStop(.5,'#0e7a52');g.addColorStop(1,'#084a32');x.fillStyle=g;x.fillRect(0,0,W,300);
+  x.save();x.strokeStyle='rgba(255,255,255,.06)';x.lineWidth=2;for(let yy=0;yy<300;yy+=80)for(let xx=0;xx<W;xx+=80){x.save();x.translate(xx+40,yy+40);x.strokeRect(-18,-18,36,36);x.rotate(Math.PI/4);x.strokeRect(-18,-18,36,36);x.restore()}x.restore();
+  x.fillStyle='#e5c26a';x.fillRect(0,300,W,8);
+  const logo=document.querySelector('header .logo');
+  if(logo){const im=new Image();im.src=logo.src;await new Promise(r=>{im.onload=r;im.onerror=r;if(im.complete)r()});
+    x.save();x.beginPath();x.arc(150,150,95,0,Math.PI*2);x.fillStyle='#fff';x.fill();x.clip();try{x.drawImage(im,55,55,190,190)}catch(_){}x.restore();
+    x.beginPath();x.arc(150,150,99,0,Math.PI*2);x.strokeStyle='#e5c26a';x.lineWidth=7;x.stroke()}
+  T(st.nameUr||'',W-60,110,'700 54px '+UR,'#f7e3a1','right','rtl');
+  T((st.name||'').toUpperCase(),W-60,175,'800 38px '+EN,'#fff','right');
+  T(st.place||'',W-60,220,'600 28px '+EN,'#cdeedd','right');
+  T('Monthly Chanda Record',W-60,262,'600 24px '+EN,'#e5c26a','right');
+  // title
+  T('MEMBER STATEMENT',60,375,'800 40px '+EN,'#0a4a32');
+  T('ماہانہ چندہ کا گوشوارہ',W-60,375,'700 38px '+UR,'#b7861a','right','rtl');
+  T('Year '+y+'   ·   Issued '+dL(today()),60,418,'600 24px '+EN,'#6b7c74');
+  // member box
+  x.fillStyle='#eef6f1';rr(60,445,W-120,190,22);x.fill();x.strokeStyle='#cfe3d7';x.lineWidth=2;rr(60,445,W-120,190,22);x.stroke();
+  x.fillStyle='#0e7a52';rr(60,445,14,190,7);x.fill();
+  T('MEMBER',100,490,'700 20px '+EN,'#6b7c74');
+  T(m.name,100,545,'800 46px '+EN,'#13203a','left',isUr(m.name)?'rtl':'ltr');
+  T([m.phone,m.father?('s/o '+m.father):''].filter(Boolean).join('   ·   ')||'—',100,595,'600 26px '+EN,'#4a5b54');
+  T('MONTHLY CHANDA',W-100,490,'700 20px '+EN,'#6b7c74','right');T(rs(m.fee),W-100,540,'800 40px '+EN,'#0e7a52','right');
+  T('Member since '+mL(m.start),W-100,595,'600 24px '+EN,'#4a5b54','right');
+  // table
+  let Y=680;const cx=[60,420,640,860,W-60];
+  x.fillStyle='#0e7a52';rr(60,Y,W-120,64,14);x.fill();
+  T('MONTH',90,Y+42,'800 24px '+EN,'#fff');T('DUE',cx[2]-20,Y+42,'800 24px '+EN,'#fff','right');T('PAID',cx[3]-20,Y+42,'800 24px '+EN,'#fff','right');T('STATUS',W-90,Y+42,'800 24px '+EN,'#fff','right');
+  Y+=64;
+  const SL2={paid:['Paid','#0e7a52','#dcf5e8'],adv:['Advance','#0b8285','#d9f3f2'],part:['Partial','#b36b00','#fff0d1'],due:['Unpaid','#c22b2b','#fde4e8']};
+  rows.forEach((r,i)=>{x.fillStyle=i%2?'#f3f7f4':'#ffffff';x.fillRect(60,Y,W-120,RH);
+    T(MN[+r.mo.slice(5)-1]+' '+r.mo.slice(0,4),90,Y+40,'700 26px '+EN,'#13203a');
+    T(rs(r.due),cx[2]-20,Y+40,'600 26px '+EN,'#4a5b54','right');T(rs(r.paid),cx[3]-20,Y+40,'700 26px '+EN,'#13203a','right');
+    const k=SL2[r.st]||SL2.due;x.font='800 22px '+EN;const w=x.measureText(k[0]).width+34;x.fillStyle=k[2];rr(W-90-w,Y+13,w,36,18);x.fill();T(k[0],W-90-w/2,Y+38,'800 22px '+EN,k[1],'center');
+    Y+=RH});
+  if(!rows.length){T('No months in this year',W/2,Y+40,'600 26px '+EN,'#6b7c74','center');Y+=RH}
+  x.fillStyle='#e5c26a';x.fillRect(60,Y,W-120,4);Y+=4;
+  const yDue=sum(rows,r=>r.due),yPaid=sum(rows,r=>r.paid);
+  x.fillStyle='#fbf3dc';x.fillRect(60,Y,W-120,64);
+  T('TOTAL '+y,90,Y+42,'800 26px '+EN,'#13203a');T(rs(yDue),cx[2]-20,Y+42,'800 26px '+EN,'#13203a','right');T(rs(yPaid),cx[3]-20,Y+42,'800 26px '+EN,'#0e7a52','right');
+  Y+=100;
+  // summary cards
+  const cw=(W-120-40)/3;const SC=[['TOTAL DUE (ALL)',rs(s.due),'#1f5fc9'],['TOTAL PAID',rs(s.paid),'#0e7a52'],[s.bal>0?'BALANCE DUE':s.bal<0?'ADVANCE':'BALANCE',rs(Math.abs(s.bal)),s.bal>0?'#d23b56':'#b7861a']];
+  SC.forEach(([k,v,col],i)=>{const X=60+i*(cw+20);x.fillStyle=col;rr(X,Y,cw,120,20);x.fill();T(k,X+cw/2,Y+45,'700 20px '+EN,'rgba(255,255,255,.9)','center');T(v,X+cw/2,Y+95,'800 36px '+EN,'#fff','center')});
+  Y+=175;
+  // payment history
+  if(P.length){T('PAYMENTS RECEIVED IN '+y,60,Y,'800 26px '+EN,'#0a4a32');Y+=22;
+    x.fillStyle='#e9efe9';rr(60,Y,W-120,52,12);x.fill();
+    T('RECEIPT',90,Y+34,'800 20px '+EN,'#4a5b54');T('DATE',330,Y+34,'800 20px '+EN,'#4a5b54');T('RECEIVED BY',590,Y+34,'800 20px '+EN,'#4a5b54');T('AMOUNT',W-90,Y+34,'800 20px '+EN,'#4a5b54','right');Y+=52;
+    P.forEach(p=>{x.fillStyle='#e3ebe6';x.fillRect(60,Y+PH-2,W-120,2);
+      T('#'+(p.no||''),90,Y+37,'700 24px '+EN,'#13203a');T(dL(p.date),330,Y+37,'600 24px '+EN,'#13203a');
+      T(p.by||'—',590,Y+37,'600 24px '+EN,'#13203a','left',isUr(p.by)?'rtl':'ltr');T(rs(p.amount),W-90,Y+37,'800 24px '+EN,'#0e7a52','right');Y+=PH});
+    Y+=46}
+  // footer
+  x.strokeStyle='#9aa8a1';x.lineWidth=2;x.beginPath();x.moveTo(W-420,Y+80);x.lineTo(W-60,Y+80);x.stroke();
+  T('Authorized signature',W-240,Y+115,'600 22px '+EN,'#6b7c74','center');
+  x.beginPath();x.arc(200,Y+70,70,0,Math.PI*2);x.strokeStyle='rgba(14,122,82,.35)';x.lineWidth=4;x.stroke();x.beginPath();x.arc(200,Y+70,58,0,Math.PI*2);x.lineWidth=2;x.stroke();
+  T('✦ MASJID ✦',200,Y+64,'800 18px '+EN,'rgba(14,122,82,.55)','center');T('KHALID BIN WALEED',200,Y+88,'700 11px '+EN,'rgba(14,122,82,.55)','center');
+  x.fillStyle='#0e7a52';x.fillRect(0,H-70,W,70);x.fillStyle='#e5c26a';x.fillRect(0,H-74,W,4);
+  T('جزاک اللہ خیراً — آپ کے تعاون کا شکریہ',W/2,H-26,'700 30px '+UR,'#f7e3a1','center','rtl');
+  return c}
+async function statementSheet(id){const m=byId(id);const y=V.gy;
+  openSheet('Statement · '+esc(m.name),`<div class="monthbar"><button onclick="V.gy--;statementSheet('${id}')" aria-label="Previous year">‹</button><b>${y}</b><button onclick="V.gy++;statementSheet('${id}')" aria-label="Next year">›</button></div>
+   <div class="nzimg" id="stImg"><div class="empty">Preparing statement…</div></div>
+   <button class="btn green full big2" onclick="stmtShare('${id}')">Share statement on WhatsApp</button>
+   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="stmtDownload('${id}')">Download JPEG</button><button class="btn ghost" onclick="statement('${id}')">Send as text</button></div>
+   <button class="btn ghost full" style="margin-top:8px" onclick="memberSheet('${id}')">‹ Back</button>`);
+  const c=await stmtCanvas(id,y);const el=document.getElementById('stImg');if(el)el.innerHTML=`<img src="${c.toDataURL('image/jpeg',.9)}" alt="Member statement">`}
+const stmtBlob=async id=>{const c=await stmtCanvas(id,V.gy);return new Promise(r=>c.toBlob(r,'image/jpeg',.92))};
+const stmtName=id=>'statement-'+(byId(id).name||'member').replace(/[^\w\u0600-\u06FF]+/g,'-')+'-'+V.gy+'.jpg';
+async function stmtShare(id){shareImg(await stmtBlob(id),stmtName(id),'گوشوارہ — '+(S.settings.nameUr||S.settings.name))}
+async function stmtDownload(id){dl(stmtName(id),await stmtBlob(id),'image/jpeg');toast('Statement downloaded')}
 
 /* ---------- Excel import ---------- */
 const IF=[['name','Name *',/^(member\s*)?name$|^naam|^full\s*name|^member$/i],['father','Father name',/father|walid|s\s*\/\s*o|f\.?\s*name/i],['house','House / street',/house|address|mohall|street|ghar|area|location/i],['phone','Mobile number',/phone|mobile|cell|contact|whats|number|no\.?$/i],['fee','Monthly amount',/month|amount|fee|chanda/i],['arrears','Old dues',/old|arrear|previous|baqaya|pending|due/i]];
