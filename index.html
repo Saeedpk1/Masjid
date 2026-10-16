@@ -314,6 +314,14 @@ details.rep2 summary b{font-size:14px}details.rep2 summary span{font-size:12px}
 .hadith.hsm{padding:14px 14px 10px;margin-top:4px}
 .hadith.hsm p{font-size:13px;margin:2px 0 4px}
 .hadith.hsm .star{width:24px;height:24px;top:-12px;font-size:12px}
+
+.qa.qa2{grid-template-columns:repeat(6,1fr)!important}
+.qa2 button{grid-column:span 2}
+.qa2 button:nth-child(-n+2){grid-column:span 3;font-size:13.5px}
+.qa2 button:nth-child(n+3){padding:8px 4px 7px;gap:4px;font-size:12px;flex-direction:column;justify-content:center;text-align:center}
+.qa2 button:nth-child(n+3) i{width:30px;height:30px}
+.qa2 button:nth-child(n+3) i svg{width:17px;height:17px}
+@media (max-width:380px){header h1{font-size:13.5px;letter-spacing:.4px}header .place{font-size:10.5px}}
 </style>
 </head>
 <body>
@@ -400,7 +408,7 @@ function render(){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===(V.tab==='assets'?'more':V.tab==='donations'?'home':V.tab)));
   main.innerHTML=({home:vHome,members:vMembers,collect:vCollect,expenses:vExpenses,more:vMore,assets:vAssets,donations:vDonations})[V.tab]();
   const fab=document.getElementById('fab');
-  const F={members:['+ Add member',()=>memberForm()],collect:['+ Receive',()=>payForm()],expenses:['+ Add kharcha',()=>expForm()],assets:['+ Add asset',()=>assetForm()],donations:['+ Add donation',()=>donForm()]}[V.tab];
+  const F={members:['+ Add member',()=>memberForm()],collect:['+ Receive',()=>payForm()],expenses:['+ Add kharcha',()=>expForm()],assets:['+ Add asset',()=>assetForm()]}[V.tab];
   if(F){fab.style.display='block';fab.textContent=F[0];fab.onclick=F[1]}else fab.style.display='none';
   if(V.tab==='members')drawMembers();
 }
@@ -448,10 +456,10 @@ function vHome(){
   </div>
   <div class="qa qa2">
    <button onclick="payForm()"><i class="q1">${IC.recv}</i><span>Chanda</span></button>
-   <button onclick="donForm()"><i class="q5">${IC.gift}</i><span>Donation</span></button>
+   <button onclick="go('donations')"><i class="q5">${IC.gift}</i><span>Donations</span></button>
    <button onclick="remindAll()"><i class="q3">${IC.wa}${owing?`<b>${owing}</b>`:''}</i><span>Remind</span></button>
    <button onclick="go('members');memberForm()"><i class="q2">${IC.add}</i><span>Member</span></button>
-   <button onclick="go('donations')"><i class="q6">${IC.chart}</i><span>Donations</span></button>
+
    <button onclick="go('assets')"><i class="q4">${IC.box}</i><span>Assets</span></button>
   </div>
   <div class="replist">
@@ -465,7 +473,7 @@ function vHome(){
   </div>
   ${hadith()}`;
 }
-function rsK(n){n=Math.round(n||0);const a=Math.abs(n),f=(x,u)=>'Rs '+(n<0?'-':'')+(+x.toFixed(1))+u;return a>=100000?f(a/100000,' lac'):a>=10000?f(a/1000,'k'):rs(n)}
+function rsK(n){n=Math.round(n||0);const a=Math.abs(n),f=(x,u)=>'Rs '+(n<0?'-':'')+(+x.toFixed(1))+u;return a>=100000?f(a/100000,' lac'):a>=1000?f(a/1000,'k'):rs(n)}
 function tipsList(unpaid){const T=[];const cm=curMonth();
   if(unpaid>0)T.push(['#d23b56','⏳',`${unpaid} member${unpaid>1?'s have':' has'} not paid for ${MN[+cm.slice(5)-1]} yet`,'Collect',"V.cm=curMonth();V.cf='unpaid';go('collect')"]);
   const late=S.members.filter(m=>summary(m).mDue>=3).length;
@@ -580,7 +588,7 @@ function vMore(){
    <p class="note">Changing the default amount only applies to members you add later.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 9 · Compact home</p>
+  <p class="note" style="text-align:center">App version 10 · One Donations button</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -913,9 +921,10 @@ function vDonations(){
   const L=Y.filter(d=>V.dt==='all'||d.type===V.dt).sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
   return `<button class="mini" style="margin:6px 0 2px;font-size:14px" onclick="go('home')">‹ Home</button>
   <div class="hero" style="background:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.09' stroke-width='1.2'%3E%3Crect x='17' y='17' width='22' height='22'/%3E%3Crect x='17' y='17' width='22' height='22' transform='rotate(45 28 28)'/%3E%3C/g%3E%3C/svg%3E&quot;),linear-gradient(135deg,#6a3fc8,#7c3aed 50%,#9a6cf0);box-shadow:0 12px 28px rgba(124,58,237,.35)"><i style="width:60px;height:60px;border-radius:18px;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.18)">${IC.gift}</i><div class="grow"><div class="hk" style="color:#e9ddff">Donations in ${y}</div><div class="hv">${rs(tot)}</div><div class="hs" style="color:#e9ddff">${Y.length} donation${Y.length==1?'':'s'} · this month ${rs(mon)}</div></div></div>
+  <button class="btn full" style="margin-bottom:10px;padding:14px;font-size:16px;background:linear-gradient(135deg,#6a3fc8,#9a6cf0);box-shadow:0 6px 16px rgba(124,58,237,.3)" onclick="donForm()">＋ Add donation</button>
   <div class="monthbar"><button onclick="V.dy--;render()" aria-label="Previous year">‹</button><b>${y}</b><button onclick="V.dy++;render()" aria-label="Next year">›</button></div>
   ${byT.length?`<div class="acats">${byT.map(({t,L})=>`<button class="acat ${V.dt===t[0]?'on':''}" style="--c:${t[3]}" onclick="V.dt=V.dt==='${t[0]}'?'all':'${t[0]}';render()"><b>${t[1]}</b><span>${rs(sum(L,d=>d.amount))}</span><small>${L.length} donation${L.length>1?'s':''}</small></button>`).join('')}</div>`:''}
-  <div class="list">${L.length?L.map(d=>`<div class="row" onclick="donForm('${d.id}')">${av(d.anon?'?':d.name)}<div class="grow"><div class="t">${esc(donName(d))}</div><div class="s">#D${d.no} · ${dL(d.date)} · ${esc(donType(d))}${d.method==='online'?' · online':''}</div></div><div class="amt green">${rs(d.amount)}</div></div>`).join(''):`<div class="empty">${S.donations.length?'No donations here.':'<b>No donations yet</b><br>Record donations separately from monthly chanda — Juma box, construction, Ramadan and more.<br><br><button class="btn" onclick="donForm()">Add first donation</button>'}</div>`}</div>`;
+  <div class="list">${L.length?L.map(d=>`<div class="row" onclick="donForm('${d.id}')">${av(d.anon?'?':d.name)}<div class="grow"><div class="t">${esc(donName(d))}</div><div class="s">#D${d.no} · ${dL(d.date)} · ${esc(donType(d))}${d.method==='online'?' · online':''}</div></div><div class="amt green">${rs(d.amount)}</div></div>`).join(''):`<div class="empty">${S.donations.length?'No donations here.':'<b>No donations yet</b><br>Record donations separately from monthly chanda — Juma box, construction, Ramadan and more.<br>Tap <b>＋ Add donation</b> above to record the first one.'}</div>`}</div>`;
 }
 function donForm(id){
   const ed=id?S.donations.find(x=>x.id===id):null;const cols=collectorList();
