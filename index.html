@@ -469,6 +469,22 @@ nav button[data-t="collect"] svg{border-color:#0e7a52}
 nav button[data-t="collect"].on{color:#fff;background:none;box-shadow:none}
 nav button[data-t="collect"].on svg{background:linear-gradient(145deg,#f2cf6b,#bf8f1c);box-shadow:0 0 0 3px rgba(255,255,255,.5),0 6px 16px rgba(191,143,28,.5)}
 .nzf .u2{unicode-bidi:isolate;display:inline-block}
+
+table.reg{font-size:12px}
+table.reg th,table.reg td{padding:7px 6px;text-align:center}
+table.reg td.nm,table.reg th:nth-child(2){text-align:left;font-family:Manrope,var(--ur);font-weight:700;white-space:nowrap}
+table.reg td:last-child,table.reg td:nth-last-child(2),table.reg th:last-child,table.reg th:nth-last-child(2){text-align:right;white-space:nowrap}
+table.reg td.neg{color:var(--bad);font-weight:800}table.reg td.pos{color:var(--ok);font-weight:700}
+.rc{font-weight:800}
+td.rc.paid,span.rc.paid{background:#dcf5e8;color:#0e7a52}
+td.rc.part,span.rc.part{background:#fff0d1;color:#b36b00}
+td.rc.due,span.rc.due{background:#fde4e8;color:#c22b2b}
+td.rc.adv,span.rc.adv{background:#d9f3f2;color:#0b8285}
+td.rc.na,span.rc.na,td.rc.fut{color:#a0a8a4}
+td.rc small{font-size:10px}
+.rlg{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:11.5px;color:var(--muted);margin-top:10px}
+.rlg span.rc{display:inline-grid;place-items:center;width:22px;height:20px;border-radius:6px;font-size:12px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) td.rc.paid{background:#10352a;color:#3fd69a}:root:not([data-theme="light"]) td.rc.part{background:#382a10;color:#ffbf55}:root:not([data-theme="light"]) td.rc.due{background:#3d1820;color:#ff7d92}:root:not([data-theme="light"]) td.rc.adv{background:#0f3333;color:#5fd6d2}}
 </style>
 </head>
 <body>
@@ -564,6 +580,7 @@ function render(){
 function hijri(){try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}catch(_){return''}}
 function greet(){const h=new Date().getHours();return h<12?'Subah bakhair':h<17?'Good afternoon':'Shaam bakhair'}
 const IC={
+ users2:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M15 9v11"/></svg>',
  hour:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9"/></svg>',
  bank:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></svg>',
  gift:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13M12 8c-2-4-7-4-6-1 .5 1.5 3 1 6 1zM12 8c2-4 7-4 6-1-.5 1.5-3 1-6 1z"/></svg>',
@@ -725,6 +742,7 @@ function vMore(){
    repFoot()+repBtns(`<button class="btn green sm" onclick="shareIncomeYear()">Share in Urdu</button>`);
   return `<div class="monthbar" style="margin-top:8px"><button onclick="V.ry--;render()" aria-label="Previous year">‹</button><b>Reports ${y}</b><button onclick="V.ry++;render()" aria-label="Next year">›</button></div>
   <div class="replist">
+  ${repBox('reg','linear-gradient(140deg,#0b8285,#22b7b2)',IC.users2,'Members register',`${S.members.length} members · month by month`,letterhead('Members Chanda Register',per)+regTable(y)+repFoot()+repBtns(`<button class="btn sm" style="background:linear-gradient(135deg,#107c41,#21a366)" onclick="regExport()">⬇ Excel</button><button class="btn green sm" onclick="regShare()">Share Excel</button>`))}
   ${repBox('chanda','linear-gradient(140deg,#0e7a52,#16a974)',IC.recv,'Monthly chanda report',`${rs(cIn)} received · ${pct}% collected`,chanda)}
   ${repBox('don','linear-gradient(140deg,#6a3fc8,#9a6cf0)',IC.gift,'Donations report',`${rs(dTot)} · ${Y.length} donation${Y.length==1?'':'s'}`,don)}
   ${repBox('inc','linear-gradient(140deg,#d23b56,#f2768a)',IC.exp,'Kharcha report',`${rs(tE)} spent · cash ${rs(cashInHand())}`,inc)}
@@ -744,7 +762,7 @@ function vMore(){
    <p class="note">When you change the amount, the app asks whether to apply it to all members or only new ones.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 21 · JPEG member statement</p>
+  <p class="note" style="text-align:center">App version 22 · Members register & Excel</p>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -1293,6 +1311,71 @@ const stmtBlob=async id=>{const c=await stmtCanvas(id,V.gy);return new Promise(r
 const stmtName=id=>'statement-'+(byId(id).name||'member').replace(/[^\w\u0600-\u06FF]+/g,'-')+'-'+V.gy+'.jpg';
 async function stmtShare(id){shareImg(await stmtBlob(id),stmtName(id),'گوشوارہ — '+(S.settings.nameUr||S.settings.name))}
 async function stmtDownload(id){dl(stmtName(id),await stmtBlob(id),'image/jpeg');toast('Statement downloaded')}
+
+/* ---------- Members register (all members × months) + colourful Excel ---------- */
+function regData(y){const cm=curMonth();const ms=months(y+'-01',y+'-12');
+  const L=[...S.members].sort((a,b)=>a.name.localeCompare(b.name)).map(m=>{const fee=+m.fee||0,arr=+m.arrears||0,pa=paidBy(m.id);
+    const cells=ms.map(mo=>{if(!activeIn(m,mo))return{k:'na',v:0};const i=months(m.start,mo).length-1;const cov=Math.max(0,Math.min(fee,pa-arr-i*fee));
+      const st=mStatus(m,mo);if(mo>cm)return st==='paid'?{k:'adv',v:cov}:st==='part'?{k:'part',v:cov}:{k:'fut',v:0};return{k:st,v:cov}});
+    return{m,cells,paid:sum(cells,c=>c.v),bal:summary(m).bal}});
+  return{ms,L}}
+const RGL={paid:'✓',part:'◐',due:'✗',adv:'✓',na:'—',fut:''};
+function regTable(y){const{ms,L}=regData(y);
+  if(!L.length)return'<div class="empty">No members yet.</div>';
+  const cnt=i=>L.filter(r=>r.cells[i].k==='paid'||r.cells[i].k==='adv').length;
+  return `<div class="scroll"><table class="rt reg"><thead><tr><th>#</th><th>Name</th><th>Mobile</th>${ms.map(mo=>`<th>${MN[+mo.slice(5)-1]}</th>`).join('')}<th>Paid</th><th>Balance</th></tr></thead><tbody>
+  ${L.map((r,i)=>`<tr onclick="memberSheet('${r.m.id}')"><td>${i+1}</td><td class="nm">${esc(r.m.name)}</td><td>${esc(r.m.phone||'—')}</td>${r.cells.map(c=>`<td class="rc ${c.k}" title="${c.v?rs(c.v):''}">${c.k==='part'?`<small>${c.v}</small>`:RGL[c.k]}</td>`).join('')}<td>${rs(r.paid)}</td><td class="${r.bal>0?'neg':'pos'}">${r.bal<0?'Adv '+rs(-r.bal):rs(r.bal)}</td></tr>`).join('')}
+  </tbody><tfoot><tr><td></td><td>Total</td><td>${L.length} members</td>${ms.map((mo,i)=>`<td class="rc">${cnt(i)}</td>`).join('')}<td>${rs(sum(L,r=>r.paid))}</td><td>${rs(sum(L,r=>Math.max(0,r.bal)))}</td></tr></tfoot></table></div>
+  <div class="rlg"><span class="rc paid">✓</span> Paid <span class="rc part">◐</span> Partial <span class="rc due">✗</span> Unpaid <span class="rc adv">✓</span> Advance <span class="rc na">—</span> Not a member yet</div>`}
+/* minimal zip (stored) for xlsx — works offline */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+function zipStore(files){const enc=new TextEncoder();const parts=[],cent=[];let off=0;
+  const u16=v=>[v&255,(v>>8)&255],u32=v=>[v&255,(v>>8)&255,(v>>16)&255,(v>>>24)&255];
+  files.forEach(([name,data])=>{const nb=enc.encode(name),db=enc.encode(data),cr=crc32(db);
+    const lh=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(cr),...u32(db.length),...u32(db.length),...u16(nb.length),...u16(0)]);
+    parts.push(lh,nb,db);
+    cent.push(new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(cr),...u32(db.length),...u32(db.length),...u16(nb.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nb);
+    off+=lh.length+nb.length+db.length});
+  const csz=cent.reduce((a,b)=>a+b.length,0);
+  const end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(csz),...u32(off),...u16(0)]);
+  return new Blob([...parts,...cent,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+function regXlsx(y){const{ms,L}=regData(y);const st=S.settings;const NC=3+12+2;
+  const col=i=>{let s='';i++;while(i>0){const r=(i-1)%26;s=String.fromCharCode(65+r)+s;i=Math.floor((i-1)/26)}return s};
+  const X=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const sc=(r,c,v,s)=>`<c r="${col(c)}${r}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${X(v)}</t></is></c>`;
+  const nc=(r,c,v,s)=>`<c r="${col(c)}${r}" s="${s}"><v>${+v||0}</v></c>`;
+  const SX={paid:5,part:6,due:7,adv:11,na:8,fut:8};
+  const rows=[];
+  rows.push(`<row r="1" ht="34" customHeight="1">${sc(1,0,(st.name||'').toUpperCase()+'   ·   '+(st.nameUr||''),1)}${Array.from({length:NC-1},(_,i)=>`<c r="${col(i+1)}1" s="1"/>`).join('')}</row>`);
+  rows.push(`<row r="2" ht="22" customHeight="1">${sc(2,0,(st.place||'')+'   ·   Members Chanda Register '+y+'   ·   Generated '+dL(today()),2)}${Array.from({length:NC-1},(_,i)=>`<c r="${col(i+1)}2" s="2"/>`).join('')}</row>`);
+  const H=['S.No','Name','Mobile',...ms.map(mo=>MN[+mo.slice(5)-1]),'Paid '+y+' (Rs)','Balance (Rs)'];
+  rows.push(`<row r="4" ht="24" customHeight="1">${H.map((h,i)=>sc(4,i,h,3)).join('')}</row>`);
+  L.forEach((r,i)=>{const R=5+i,z=i%2?13:4;
+    rows.push(`<row r="${R}" ht="20" customHeight="1">${nc(R,0,i+1,i%2?14:12)}${sc(R,1,r.m.name,z)}${sc(R,2,r.m.phone||'—',z)}${r.cells.map((c,j)=>sc(R,3+j,c.k==='part'?String(c.v):RGL[c.k]||'',SX[c.k])).join('')}${nc(R,15,r.paid,9)}${nc(R,16,r.bal,r.bal>0?15:16)}</row>`)});
+  const TR=5+L.length;
+  rows.push(`<row r="${TR}" ht="22" customHeight="1">${sc(TR,0,'',10)}${sc(TR,1,'TOTAL',10)}${sc(TR,2,L.length+' members',10)}${ms.map((mo,j)=>sc(TR,3+j,L.filter(r=>r.cells[j].k==='paid'||r.cells[j].k==='adv').length+' paid',10)).join('')}${nc(TR,15,sum(L,r=>r.paid),17)}${nc(TR,16,sum(L,r=>Math.max(0,r.bal)),17)}</row>`);
+  rows.push(`<row r="${TR+2}">${sc(TR+2,1,'Legend:  ✓ Paid    ◐ Partial (amount shown)    ✗ Unpaid    — Not a member yet',18)}</row>`);
+  const cols=`<cols><col min="1" max="1" width="6" customWidth="1"/><col min="2" max="2" width="26" customWidth="1"/><col min="3" max="3" width="15" customWidth="1"/><col min="4" max="15" width="7.5" customWidth="1"/><col min="16" max="17" width="15" customWidth="1"/></cols>`;
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane xSplit="3" ySplit="4" topLeftCell="D5" activePane="bottomRight" state="frozen"/></sheetView></sheetViews>${cols}<sheetData>${rows.join('')}</sheetData><mergeCells count="2"><mergeCell ref="A1:${col(NC-1)}1"/><mergeCell ref="A2:${col(NC-1)}2"/></mergeCells><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  const B='<border><left style="thin"><color rgb="FFD0D7D3"/></left><right style="thin"><color rgb="FFD0D7D3"/></right><top style="thin"><color rgb="FFD0D7D3"/></top><bottom style="thin"><color rgb="FFD0D7D3"/></bottom><diagonal/></border>';
+  const F=c=>`<fill><patternFill patternType="solid"><fgColor rgb="FF${c}"/><bgColor indexed="64"/></patternFill></fill>`;
+  const fonts=['<font><sz val="11"/><name val="Calibri"/></font>','<font><b/><sz val="16"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>','<font><i/><sz val="11"/><color rgb="FF0A4A32"/><name val="Calibri"/></font>','<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>','<font><b/><sz val="12"/><color rgb="FF0E7A52"/><name val="Calibri"/></font>','<font><b/><sz val="11"/><color rgb="FFB36B00"/><name val="Calibri"/></font>','<font><b/><sz val="12"/><color rgb="FFC22B2B"/><name val="Calibri"/></font>','<font><sz val="11"/><color rgb="FFA0A8A4"/><name val="Calibri"/></font>','<font><b/><sz val="11"/><name val="Calibri"/></font>','<font><b/><sz val="12"/><color rgb="FF0B8285"/><name val="Calibri"/></font>','<font><b/><sz val="11"/><color rgb="FFC22B2B"/><name val="Calibri"/></font>','<font><b/><sz val="11"/><color rgb="FF0E7A52"/><name val="Calibri"/></font>'];
+  const fills=['<fill><patternFill patternType="none"/></fill>','<fill><patternFill patternType="gray125"/></fill>',F('0E7A52'),F('FBF3DC'),F('0A5A3C'),F('DCF5E8'),F('FFF0D1'),F('FDE4E8'),F('F2F4F3'),F('D9F3F2'),F('F3F8F5'),F('F2CF6B')];
+  // xf: [font,fill,border,numFmt,halign]
+  const XF=[[0,0,0,0,''],[1,2,0,0,'center'],[2,3,0,0,'center'],[3,4,1,0,'center'],[0,0,1,0,'left'],[4,5,1,0,'center'],[5,6,1,0,'center'],[6,7,1,0,'center'],[7,8,1,0,'center'],[8,0,1,164,'right'],[8,11,1,0,'center'],[9,9,1,0,'center'],[0,0,1,0,'center'],[0,10,1,0,'left'],[0,10,1,0,'center'],[10,0,1,164,'right'],[11,0,1,165,'right'],[8,11,1,164,'right'],[2,0,0,0,'left']];
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0;[Red]-#,##0"/><numFmt numFmtId="165" formatCode="#,##0;&quot;Adv &quot;#,##0;0"/></numFmts><fonts count="${fonts.length}">${fonts.join('')}</fonts><fills count="${fills.length}">${fills.join('')}</fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>${B}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${XF.length}">${XF.map(([f,fi,b,n,h])=>`<xf numFmtId="${n}" fontId="${f}" fillId="${fi}" borderId="${b}" xfId="0" applyFont="1" applyFill="1" applyBorder="1"${n?' applyNumberFormat="1"':''} applyAlignment="1"><alignment vertical="center"${h?` horizontal="${h}"`:''}/></xf>`).join('')}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  const files=[['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+   ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+   ['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Register ${y}" sheetId="1" r:id="rId1"/></sheets></workbook>`],
+   ['xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+   ['xl/styles.xml',styles],['xl/worksheets/sheet1.xml',sheet]];
+  return zipStore(files)}
+const XMIME='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+function regExport(){const y=V.ry;dl('masjid-members-register-'+y+'.xlsx',regXlsx(y),XMIME);toast('Excel file downloaded')}
+async function regShare(){const y=V.ry,b=regXlsx(y),n='masjid-members-register-'+y+'.xlsx';const f=new File([b],n,{type:XMIME});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:n});return}catch(e){if(e&&e.name==='AbortError')return}}
+  dl(n,b,XMIME);toast('Excel file downloaded')}
 
 /* ---------- Excel import ---------- */
 const IF=[['name','Name *',/^(member\s*)?name$|^naam|^full\s*name|^member$/i],['father','Father name',/father|walid|s\s*\/\s*o|f\.?\s*name/i],['house','House / street',/house|address|mohall|street|ghar|area|location/i],['phone','Mobile number',/phone|mobile|cell|contact|whats|number|no\.?$/i],['fee','Monthly amount',/month|amount|fee|chanda/i],['arrears','Old dues',/old|arrear|previous|baqaya|pending|due/i]];
