@@ -485,6 +485,8 @@ td.rc small{font-size:10px}
 .rlg{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:11.5px;color:var(--muted);margin-top:10px}
 .rlg span.rc{display:inline-grid;place-items:center;width:22px;height:20px;border-radius:6px;font-size:12px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) td.rc.paid{background:#10352a;color:#3fd69a}:root:not([data-theme="light"]) td.rc.part{background:#382a10;color:#ffbf55}:root:not([data-theme="light"]) td.rc.due{background:#3d1820;color:#ff7d92}:root:not([data-theme="light"]) td.rc.adv{background:#0f3333;color:#5fd6d2}}
+.verbox{display:flex;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;margin:4px 0 12px}
+.verbox b{display:block;font-size:14px}.verbox span{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -750,7 +752,9 @@ function vMore(){
   </div>
   <details class="box"><summary>Download & backup</summary><div class="boxin">
    <p class="note" style="margin-top:0">All data stays on this phone. Download a backup every month and keep it safe (WhatsApp it to yourself or save to Google Drive).</p>
-   <div class="btns"><button class="btn" onclick="backup()">Download backup</button><button class="btn ghost" onclick="fileIn.click()">Restore backup</button></div>
+   <p class="note" style="margin-top:0"><b>Move data PC ⇄ phone:</b> each device keeps its own records. Tap <b>Send backup</b> here, send the file on WhatsApp to the other device, then tap <b>Restore backup</b> there.</p>
+   <div class="btns"><button class="btn" onclick="backup()">Download backup</button><button class="btn green" onclick="shareBackup()">Send backup</button></div>
+   <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="fileIn.click()">Restore backup</button></div>
    <div class="btns" style="margin-top:8px"><button class="btn ghost" onclick="csvMembers()">Members list (Excel)</button><button class="btn ghost" onclick="csvPayments()">All payments (Excel)</button><button class="btn ghost" onclick="csvDonations()">Donations (Excel)</button></div>
   </div></details>
   <details class="box"><summary>Masjid settings</summary><div class="boxin">
@@ -762,7 +766,7 @@ function vMore(){
    <p class="note">When you change the amount, the app asks whether to apply it to all members or only new ones.</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <p class="note" style="text-align:center">App version 22 · Members register & Excel</p>
+  <div class="verbox"><div><b>App version 23</b><span>Update check & data transfer</span></div><button class="btn sm" onclick="forceUpdate()">⟳ Check for update</button></div>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -1468,7 +1472,15 @@ let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;instBar.style.display='block'});
 async function doInstall(){if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;instBar.style.display='none'}
 window.addEventListener('appinstalled',()=>{instBar.style.display='none';toast('App installed')});
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+  let reloaded=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloaded)return;reloaded=true;location.reload()})}
+async function forceUpdate(){toast('Checking for update…');try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();for(const r of rs)await r.unregister()}
+  if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}}catch(_){}
+  setTimeout(()=>location.reload(),600)}
+async function shareBackup(){S.settings.lastBackup=today();save();const n='masjid-chanda-backup-'+today()+'.json';const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const f=new File([b],n,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:n});return}catch(e){if(e&&e.name==='AbortError')return}}
+  dl(n,b,'application/json');toast('Backup downloaded — send this file to the other device')}
 render();lockShow();
 </script>
 </body>
