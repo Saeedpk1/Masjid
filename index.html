@@ -500,6 +500,16 @@ td.rc small{font-size:10px}
 .mpc.sel{background:linear-gradient(140deg,#bd8a17,#e9c25a);border-color:#bd8a17;color:#fff;box-shadow:0 4px 10px rgba(189,138,23,.35)}
 .mpl{display:flex;gap:6px 10px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--muted);margin-top:8px}
 .mpl .d{width:12px;height:12px;border-radius:4px;display:inline-block}.mpl .d.paid{background:#dcf5e8;border:1px solid #bfe8d3}.mpl .d.sel{background:#bd8a17}.mpl .d.pre{border:1.5px dashed var(--muted)}
+
+.ofill{background:linear-gradient(150deg,var(--gold-soft),var(--card));border:1.5px solid var(--gold);border-radius:16px;padding:12px;margin-top:10px}
+.ofill>b{display:block;font-size:14px}.ofill>span{font-size:12px;color:var(--muted)}
+.orow{display:grid;grid-template-columns:26px 1fr 96px 34px;gap:6px;align-items:center;margin-bottom:6px}
+.orow .on{width:26px;height:26px;border-radius:50%;background:var(--pri-soft);color:var(--pri);font-weight:800;font-size:12px;display:grid;place-items:center}
+.orow .in{padding:10px 8px;min-width:0}
+.orow input[type=number]{font-weight:800;text-align:right}
+.ox{width:34px;height:40px;border:0;border-radius:10px;background:var(--bad-soft);color:var(--bad);font-weight:800}
+.ototal{display:flex;justify-content:space-between;align-items:center;background:var(--ok-soft);border-radius:14px;padding:12px 14px;margin-top:10px;font-weight:700}
+.ototal b{font-size:18px;color:var(--ok)}
 </style>
 </head>
 <body>
@@ -788,7 +798,7 @@ function vMore(){
    <p class="note">Use this if members were paying before you started the app (for example from Jan ${new Date().getFullYear()}).</p>
    <button class="btn full" onclick="saveSettings()">Save settings</button>
   </div></details>
-  <div class="verbox"><div><b>App version 25</b><span>Pay past months · new wording</span></div><button class="btn sm" onclick="forceUpdate()">⟳ Check for update</button></div>
+  <div class="verbox"><div><b>App version 26</b><span>Record old payments with dates</span></div><button class="btn sm" onclick="forceUpdate()">⟳ Check for update</button></div>
   <details class="box"><summary>App lock (PIN)</summary><div class="boxin">${localStorage.getItem(KEY+'_pin')?`<p class="note" style="margin-top:0">🔒 PIN lock is <b>on</b>. The app asks for the PIN when opened.</p><div class="btns"><button class="btn ghost" onclick="pinSetup()">Change PIN</button><button class="btn red" onclick="if(confirm('Remove the PIN lock?')){localStorage.removeItem(KEY+'_pin');render();toast('PIN removed')}">Remove PIN</button></div>`:`<p class="note" style="margin-top:0">Protect the records with a 4-digit PIN so others can't open the app on this phone.</p><button class="btn full" onclick="pinSetup()">Set PIN</button>`}</div></details>
   <details class="box"><summary>Danger zone</summary><div class="boxin"><p class="note" style="margin-top:0">Deletes every member, payment and kharcha from this phone. Download a backup first.</p><button class="btn red full" onclick="wipe()">Delete all data</button></div></details>`;
 }
@@ -814,7 +824,7 @@ function memberSheet(id){
   openSheet(esc(m.name),`
    <div class="note" style="margin:-8px 0 12px">${m.father?'s/o '+esc(m.father)+' · ':''}${esc(m.house||'')}${m.phone?' · '+esc(m.phone):''}<br>Rs ${+m.fee}/month since ${mL(m.start)}${m.end?' · left after '+mL(m.end):''}${pu?' · paid up to '+mL(pu):''}</div>
    <div class="sum3"><div><small>Total due</small><b>${rs(s.due)}</b></div><div><small>Paid</small><b>${rs(s.paid)}</b></div><div class="${s.bal>0?'owes':''}"><small>${s.bal<0?'Advance':'Balance'}</small><b>${rs(Math.abs(s.bal))}</b></div></div>
-   <div class="btns"><button class="btn" onclick="payForm('${id}')">Receive payment</button></div>
+   <div class="btns"><button class="btn" onclick="payForm('${id}')">Receive payment</button><button class="btn gold" style="flex:none" onclick="oldPayForm('${id}')">＋ Old payments</button></div>
    <div class="btns" style="margin-top:8px">${s.bal>0?`<button class="btn green" onclick="remind('${id}')">WhatsApp reminder</button>`:''}${m.phone?`<a class="btn ghost" style="text-align:center;text-decoration:none" href="tel:${esc(m.phone)}">Call</a>`:''}<button class="btn ghost" onclick="statementSheet('${id}')">Statement</button><button class="btn ghost" onclick="memberForm('${id}')">Edit</button></div>
    <div class="monthbar" style="margin-top:14px"><button onclick="V.gy--;memberSheet('${id}')" aria-label="Previous year">‹</button><b>${y}</b><button onclick="V.gy++;memberSheet('${id}')" aria-label="Next year">›</button></div>
    <div class="grid12">${grid}</div>
@@ -883,7 +893,8 @@ function payForm(id,pid){
    ${ed?'':`<div class="fl"><i style="background:#0e7a52">🗓</i><div class="grow"><label class="f">Paying for which months?</label>
     <div class="mpk"><div class="mpy"><button type="button" onclick="PMY--;pmRender()" aria-label="Previous year">‹</button><b id="pMy"></b><button type="button" onclick="PMY++;pmRender()" aria-label="Next year">›</button></div><div class="mpg" id="pMg"></div>
     <div class="mpl"><span class="d paid"></span>Paid <span class="d sel"></span>Selected <span class="d pre"></span>Before registration</div></div></div></div>`}
-   <div class="fl"><i style="background:#7c3aed">📅</i><div class="grow"><label class="f">Date</label><input class="in" id="pD" type="date" value="${ed?ed.date:today()}"></div></div>
+   <div class="fl"><i style="background:#7c3aed">📅</i><div class="grow"><label class="f">Date paid</label><input class="in" id="pD" type="date" value="${ed?ed.date:today()}" max="${today()}">
+    ${ed?'':`<div class="chips" style="margin-top:6px"><button type="button" class="chip" onclick="pD.value=today()">Today</button><button type="button" class="chip" onclick="pD.showPicker?pD.showPicker():pD.focus()">📅 Old date</button><button type="button" class="chip" onclick="if(pM.value)oldPayForm(pM.value);else toast('Select a member first')">Several old payments ›</button></div>`}</div></div>
    <div class="fl"><i style="background:#0b8285">🤝</i><div class="grow"><label class="f">Received by</label>
     <select class="in selc ursel" id="pBs" onchange="if(this.value==='__other'){pBw.style.display='block';pB.value='';pB.focus()}else{pBw.style.display='none';pB.value=this.value}">
      ${cols.map(c=>`<option value="${esc(c)}" ${c===by?'selected':''}>${esc(c)}</option>`).join('')}<option value="__other" ${byOther||!cols.length?'selected':''}>✏️ Other (write name)</option></select>
@@ -1419,6 +1430,37 @@ function regExport(){const y=V.ry;dl('masjid-members-register-'+y+'.xlsx',regXls
 async function regShare(){const y=V.ry,b=regXlsx(y),n='masjid-members-register-'+y+'.xlsx';const f=new File([b],n,{type:XMIME});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:n});return}catch(e){if(e&&e.name==='AbortError')return}}
   dl(n,b,XMIME);toast('Excel file downloaded')}
+
+/* ---------- Old payments (record past payments with their real dates) ---------- */
+let OLDR=[];
+function oldPayForm(id){const m=byId(id);if(!m)return;const y=new Date().getFullYear();
+  OLDR=[{date:'',amount:+m.fee||500}];
+  openSheet('Old payments',`
+   <div class="pcard clear">${av(m.name).replace('class="av','class="av big')}<div class="grow"><b>${esc(m.name)}</b><span>Record payments made before, with the date they were paid</span></div></div>
+   <div class="ofill"><b>⚡ Quick fill</b><span>One payment per month, paid on the 1st</span>
+    <div class="two"><div><label class="f">From</label><input class="in" type="month" id="oF" value="${y}-01"></div><div><label class="f">To</label><input class="in" type="month" id="oT" value="${addM(curMonth(),-1)}"></div></div>
+    <div style="display:flex;gap:8px;margin-top:8px"><input class="in" id="oA" type="number" inputmode="numeric" value="${+m.fee||500}" style="font-weight:800"><button type="button" class="btn sm gold" style="flex:none" onclick="oldFill()">Fill rows</button></div></div>
+   <label class="f" style="margin-top:14px">Payments (date paid · amount)</label>
+   <div id="oRows"></div>
+   <button type="button" class="btn ghost full" style="margin-top:8px" onclick="oldAdd()">＋ Add another row</button>
+   <div class="ototal" id="oTot"></div>
+   <button class="btn full big2" onclick="oldSave('${id}')">✓ Save old payments</button>
+   <button class="btn ghost full" style="margin-top:8px" onclick="memberSheet('${id}')">‹ Back</button>`);
+  oldDraw()}
+function oldDraw(){const el=document.getElementById('oRows');if(!el)return;
+  el.innerHTML=OLDR.map((r,i)=>`<div class="orow"><span class="on">${i+1}</span><input class="in" type="date" value="${r.date}" onchange="OLDR[${i}].date=this.value;oldTot()"><input class="in" type="number" inputmode="numeric" value="${r.amount}" oninput="OLDR[${i}].amount=+this.value||0;oldTot()"><button type="button" class="ox" onclick="OLDR.splice(${i},1);if(!OLDR.length)OLDR.push({date:'',amount:0});oldDraw()" aria-label="Remove row">✕</button></div>`).join('');oldTot()}
+function oldTot(){const ok=OLDR.filter(r=>r.date&&r.amount>0);oTot.innerHTML=`<span>${ok.length} payment${ok.length==1?'':'s'}</span><b>${rs(sum(ok,r=>r.amount))}</b>`}
+function oldAdd(){const last=OLDR[OLDR.length-1];const d=last&&last.date?addM(last.date.slice(0,7),1)+last.date.slice(7):'';OLDR.push({date:d,amount:last?last.amount:500});oldDraw()}
+function oldFill(){const f=oF.value,t=oT.value,a=+oA.value||0;if(!f||!t||t<f){toast('Choose From and To months');return}if(!(a>0)){toast('Enter the amount');return}
+  const L=months(f,t);if(L.length>60){toast('Too many months');return}
+  OLDR=[...OLDR.filter(r=>r.date),...L.map(mo=>({date:mo+'-01',amount:a}))];oldDraw();toast(L.length+' rows added')}
+function oldSave(id){const m=byId(id);const L=OLDR.filter(r=>r.date&&r.amount>0).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!L.length){toast('Add at least one date and amount');return}
+  if(L.some(r=>r.date>today())){toast('A date is in the future');return}
+  const first=L[0].date.slice(0,7);
+  if(first<m.start&&confirm('Count '+m.name+"'s contribution from "+mL(first)+'?\n(Now counted from '+mL(m.start)+')\n\nOK = yes, so these payments clear those months')){m.start=first;m.joined=first+'-01'}
+  L.forEach(r=>S.payments.push({id:uid(),no:nextNo(),memberId:id,amount:r.amount,date:r.date,by:'',note:'Old record'}));
+  save();render();memberSheet(id);toast(L.length+' old payment'+(L.length>1?'s':'')+' saved · '+rs(sum(L,r=>r.amount)))}
 
 /* ---------- Excel import ---------- */
 const IF=[['name','Name *',/^(member\s*)?name$|^naam|^full\s*name|^member$/i],['father','Father name',/father|walid|s\s*\/\s*o|f\.?\s*name/i],['house','House / street',/house|address|mohall|street|ghar|area|location/i],['phone','Mobile number',/phone|mobile|cell|contact|whats|number|no\.?$/i],['fee','Monthly amount',/month|amount|fee|chanda|contribution|tawun/i],['arrears','Old dues',/old|arrear|previous|baqaya|pending|due/i]];
